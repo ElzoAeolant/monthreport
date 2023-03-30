@@ -1,0 +1,30 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "AEOLANT - Reporte Mensual OpenAPI",
+        "description": "API destinada al soporte de reportes con intervalos flexibles de tiempo.",
+        "contact": {
+            "email": "cloudbeds@aeolant.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://api.aeolant.com/v1",
+            "description": "API Cloudbeds-AEOLANT"
+        }
+    ],
+    "paths": {
+        "/v1/": {}
+    },
+    "tags": [
+        {
+            "name": "Projects",
+            "description": "API Endpoints of Projects"
+        }
+    ]
+}
