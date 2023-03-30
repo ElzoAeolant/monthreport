@@ -1,4 +1,4 @@
-@extends('layouts.app', ['activePage' => 'register', 'title' => 'ENERGYNO : Plataforma IoT ECOSUR'])
+@extends('layouts.app', ['activePage' => 'register', 'title' => ' : Smart Reports'])
 
 @section('content')
     <div class="full-page register-page section-image" data-color="orange" data-image="{{ asset('img/bg5.jpg') }}">

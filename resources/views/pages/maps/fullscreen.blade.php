@@ -1,4 +1,4 @@
-@extends('layouts.app', ['activePage' => 'fullscreen', 'activeButton' => 'maps', 'title' => 'ENERGYNO : Plataforma IoT ECOSUR', 'navName' => 'Fullscreen Map'])
+@extends('layouts.app', ['activePage' => 'fullscreen', 'activeButton' => 'maps', 'title' => 'Smart Reports', 'navName' => 'Fullscreen Map'])
 
 @section('content')
     <div id="map" class="full-screen-map" style="height:100vh"></div>

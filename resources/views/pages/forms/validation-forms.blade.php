@@ -1,4 +1,4 @@
-@extends('layouts.app', ['activePage' => 'validation-forms', 'activeButton' => 'forms', 'title' => 'ENERGYNO : Plataforma IoT ECOSUR', 'navName' => 'Validation Forms'])
+@extends('layouts.app', ['activePage' => 'validation-forms', 'activeButton' => 'forms', 'title' => 'Smart Reports', 'navName' => 'Validation Forms'])
 
 @section('content')
     <div class="content">

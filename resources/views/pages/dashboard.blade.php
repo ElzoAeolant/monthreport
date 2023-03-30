@@ -1,4 +1,4 @@
-@extends('layouts/app', ['activePage' => 'dashboard', 'activeButton' => 'AEOLANTMANAGMENT', 'title' => 'AEOLANT : Plataforma IoT ECOSUR', 'navName' => 'Dashboard'])
+@extends('layouts/app', ['activePage' => 'dashboard', 'activeButton' => 'AEOLANTMANAGMENT', 'title' => 'AEOLANT : Plataforma de generación de reportes', 'navName' => 'Dashboard'])
 
 @section('content')
 <div class="content">
@@ -55,46 +55,7 @@
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-12">
-                <div class="card ">
-                    <div class="card-header ">
-                        <h4 class="card-title">{{ __('Log') }}</h4>
-                        <p class="card-category">{{ __('Since') }}{{$update_records}}</p>
-                    </div>
-                    <div class="card-body ">
-                        <canvas id="chartEnergy"></canvas>
-                    </div>
-                    <div class="card-footer ">
-                        <div class="stats">
-                            <i class="fa fa-check"></i> {{ __('Data information from ENERGYNO') }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <div class="card ">
-                    <div class="card-header ">
-                        <h4 class="card-title">{{ __('Record Count') }}</h4>
-                        <p class="card-category">{{ __('Since') }}{{$update_records}}</p>
-                    </div>
-                    <div class="card-body ">
-                        <canvas id="myChart2"></canvas>
-                    </div>
-                    <div class="card-footer ">
-                        <div class="stats">
-                            <i class="fa fa-check"></i> {{ __('Data information from ENERGYNO') }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div>
-            </div>
-        </div>
+        
     </div>
 </div>
 @endsection

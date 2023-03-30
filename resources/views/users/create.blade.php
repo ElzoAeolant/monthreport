@@ -1,4 +1,4 @@
-@extends('layouts.app', ['activePage' => 'users', 'activeButton' => 'EnergyManagement', 'title' => 'ENERGYNO : Plataforma IoT ECOSUR', 'navName' => 'Create Users'])
+@extends('layouts.app', ['activePage' => 'users', 'activeButton' => 'EnergyManagement', 'title' => 'Smart Reports', 'navName' => 'Create Users'])
 
 @section('content')
     <div class="content">
