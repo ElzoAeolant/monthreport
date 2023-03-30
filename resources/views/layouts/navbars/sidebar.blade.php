@@ -6,11 +6,11 @@ Tip 2: you can also add an image using data-image tag
 -->
     <div class="sidebar-wrapper">
         <div class="logo">
-            <a href="https://energyno.utic.ecosur.mx" class="simple-text logo-mini">
-                {{ __('EG') }}
+            <a href="https://muvon.mx/es/" class="simple-text logo-mini">
+                {{ __('SR') }}
             </a>
-            <a href="https://energyno.utic.ecosur.mx" class="simple-text logo-normal">
-                {{ __('eGuard ECOSUR') }}
+            <a href="https://muvon.mx/es/" class="simple-text logo-normal">
+                {{ __('SMART REPORTS') }}
             </a>
         </div>
         <div class="user">

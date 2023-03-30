@@ -42,54 +42,6 @@ class UsersTableSeeder extends Seeder
             'picture' => '../img/faces/face-0.jpg'
         ]);
 
-        User::factory()->create([
-            'id' => 4,
-            'name' => 'Creator',
-            'email' => 'oscar@energyno.ecosur.mx',
-            'password' => Hash::make('oscar'),
-            'role_id' => 2,
-            'picture' => '../img/faces/face-0.jpg'
-        ]);
-
-        User::factory()->create([
-            'id' => 5,
-            'name' => 'Creator',
-            'email' => 'isaac@energyno.ecosur.mx',
-            'password' => Hash::make('isaac'),
-            'role_id' => 2,
-            'picture' => '../img/faces/face-0.jpg'
-        ]);
-        User::factory()->create([
-            'id' => 6,
-            'name' => 'Creator',
-            'email' => 'hyaudeni@energyno.ecosur.mx',
-            'password' => Hash::make('hyaudeni'),
-            'role_id' => 2,
-            'picture' => '../img/faces/face-0.jpg'
-        ]);
-        User::factory()->create([
-            'id' => 7,
-            'name' => 'Creator',
-            'email' => 'abraham@energyno.ecosur.mx',
-            'password' => Hash::make('abraham'),
-            'role_id' => 2,
-            'picture' => '../img/faces/face-0.jpg'
-        ]);
-        User::factory()->create([
-            'id' => 8,
-            'name' => 'Creator',
-            'email' => 'fernando@energyno.ecosur.mx',
-            'password' => Hash::make('fernando'),
-            'role_id' => 2,
-            'picture' => '../img/faces/face-0.jpg'
-        ]);
-        User::factory()->create([
-            'id' => 9,
-            'name' => 'Creator',
-            'email' => 'roberto@energyno.ecosur.mx',
-            'password' => Hash::make('roberto'),
-            'role_id' => 2,
-            'picture' => '../img/faces/face-0.jpg'
-        ]);
+       
     }
 }
