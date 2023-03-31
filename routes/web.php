@@ -37,18 +37,12 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::get('profile', 'ProfileController@edit')->name('profile.edit');
     Route::patch('profile/update', 'ProfileController@update')->name('profile.update');
-    Route::patch('profile/password', 'ProfileController@password')->name('profile.password');
-    
-    
+    Route::patch('profile/password', 'ProfileController@password')->name('profile.password');   
     Route::resource('role', 'RoleController', ['except' => ['show']]);
     Route::resource('user', 'UserController', ['except' => ['show']]);
-    Route::resource('location', 'LocationsController', ['except' => ['show']]);
-    Route::resource('tag', 'TagController', ['except' => ['show']]);
-    Route::resource('device', 'DeviceController', ['except' => ['show']]);
-    Route::resource('tracking', 'TrackingController');
-    
-    Route::post('get-municipality-by-state', "LocationsController@getMunicipality");
-    Route::post('get-town-by-municipality', "LocationsController@getTown");
+    Route::resource('hotel', 'HotelController', ['except' => ['show']]);
+    Route::get('hotel/report', 'HotelController@report')->name("hotel.report");
+   
 
     Route::get('{page}', 'PageController@index')->name('page.index');
 

@@ -12,6 +12,7 @@
         "darkaonline/l5-swagger": "^8.5",
         "doctrine/dbal": "^2.9",
         "fakerphp/faker": "^1.20",
+        "guzzlehttp/guzzle": "^7.5",
         "laravel/framework": "^9.0",
         "laravel/legacy-factories": "^1.0",
         "laravel/sanctum": "^3.0",

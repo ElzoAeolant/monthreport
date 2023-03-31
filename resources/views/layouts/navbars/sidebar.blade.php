@@ -55,7 +55,7 @@ Tip 2: you can also add an image using data-image tag
                         <img src="{{ asset('img/laravel.svg') }}" style="width:25px">
                     </i>
                     <p>
-                        {{ __('Energyno Management') }}
+                        {{ __('Smart Reports') }}
                         <b class="caret"></b>
                     </p>
                 </a>
@@ -81,39 +81,15 @@ Tip 2: you can also add an image using data-image tag
                         @endcan
 
                         @can('manage-items', App\Models\User::class)
-                        <li class="nav-item @if($activePage == 'tag') active @endif">
-                            <a class="nav-link" href={{route('tag.index')}}>
-                                <span class="sidebar-mini">{{ __('TM') }}</span>
-                                <span class="sidebar-normal">{{ __('Tag Management') }}</span>
+                        <li class="nav-item @if($activePage == 'hotels') active @endif">
+                            <a class="nav-link" href={{route('hotel.index')}}>
+                                <span class="sidebar-mini">{{ __('HM') }}</span>
+                                <span class="sidebar-normal">{{ __('Hotels Management') }}</span>
                             </a>
                         </li>
                         @endcan
 
-                        @can('manage-items', App\Models\User::class)
-                        <li class="nav-item @if($activePage == 'location') active @endif">
-                            <a class="nav-link" href={{route('location.index')}}>
-                                <span class="sidebar-mini">{{ __('CM') }}</span>
-                                <span class="sidebar-normal">{{ __('Location Management') }}</span>
-                            </a>
-                        </li>
-                        @endcan
 
-                        @can('manage-items', App\Models\User::class)
-                        <li class="nav-item @if($activePage == 'device') active @endif">
-                            <a class="nav-link" href={{route('device.index')}}>
-                                <span class="sidebar-mini">{{ __('DM') }}</span>
-                                <span class="sidebar-normal">{{ __('Device Management') }}</span>
-                            </a>
-                        </li>
-                        @endcan
-                        @can('manage-items', App\Models\User::class)
-                        <li class="nav-item @if($activePage == 'tracking') active @endif">
-                            <a class="nav-link" href={{route('tracking.index')}}>
-                                <span class="sidebar-mini">{{ __('DTM') }}</span>
-                                <span class="sidebar-normal">{{ __('Tracking Management') }}</span>
-                            </a>
-                        </li>
-                        @endcan
                     </ul>
                 </div>
             </li>
