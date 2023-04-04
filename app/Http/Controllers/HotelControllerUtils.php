@@ -25,13 +25,22 @@ function getReservations($checkinFrom, $checkinTo){
     $endpoint = getApiURL() . 'getReservations';
     $param = array('checkInFrom' => $checkinFrom, 'checkInTo' => $checkinTo);
     $response = Http::acceptJson()->withHeaders($head)->get($endpoint,$param);
-    foreach($response as $id => $reservationID){
-        $forE = getReservationsWithRateDetails($reservationID);
-        $result = $forE;
-    }
-    $response = json_decode($response);
 
-    return "<pre>".json_encode($response,JSON_PRETTY_PRINT)."<pre\>";
+    $response = json_decode($response);
+    $dbHotels = array();
+    
+    $data = $response -> data;
+
+    foreach($data  as $key => $reservation){
+        
+        $dbHotels[$key]["reservations"] = $reservation;
+        $dbHotels[$key]["reservationsRates"] = getReservationsWithRateDetails($reservation->reservationID);
+        $dbHotels[$key]["reservationsInvoice"] = getReservationInvoiceInformation($reservation->reservationID);
+        $dbHotels[$key]["reservationsNotes"] = getNotes($reservation->reservationID);
+
+    }
+    
+    return "<pre>".json_encode($dbHotels,JSON_PRETTY_PRINT)."<pre\>";
     
 }
 
@@ -49,6 +58,24 @@ function getReservationsWithRateDetails($reservationID){
     $head = array("Authorization" => 'Bearer ' . getApiToken());
     $param = array("reservationID" => $reservationID);
     $response = Http::acceptJson()->withHeaders($head)->get($endpoint,$param);
-    return $response;
+    $response = json_decode($response);
+    return $response -> data;
 }
 
+function getReservationInvoiceInformation($reservationID){
+    $endpoint = getApiURL() . "getReservationInvoiceInformation";
+    $head = array("Authorization" => 'Bearer ' . getApiToken());
+    $param = array("reservationID" => $reservationID);
+    $response = Http::acceptJson()->withHeaders($head)->get($endpoint,$param);
+    $response = json_decode($response);
+    return $response -> data;
+}
+
+function getNotes($reservationID){
+    $endpoint = getApiURL() . "getReservationNotes";
+    $head = array("Authorization" => 'Bearer ' . getApiToken());
+    $param = array("reservationID" => $reservationID);
+    $response = Http::acceptJson()->withHeaders($head)->get($endpoint,$param);
+    $response = json_decode($response);
+    return $response -> data;
+}
