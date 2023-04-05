@@ -35,12 +35,41 @@ function getReservations($checkinFrom, $checkinTo){
         
         $dbHotels[$key]["reservations"] = $reservation;
         $dbHotels[$key]["reservationsRates"] = getReservationsWithRateDetails($reservation->reservationID);
-        $dbHotels[$key]["reservationsInvoice"] = getReservationInvoiceInformation($reservation->reservationID);
-        $dbHotels[$key]["reservationsNotes"] = getNotes($reservation->reservationID);
+        /** iterar sobre los cuartos para revisar cada tarifa y el desglose con las fechas */
+        $data2 = $dbHotels[$key]["reservationsRates"];
+        foreach($data2 as $datos){
+            $dataRooms = $datos -> rooms;
+            foreach($dataRooms as $rooms ){
+                $detailedRoomRates = array();
+                $detailedRoomRates = $rooms -> detailedRoomRates;
+            }
+        }
 
+        /** json_decode puede servir para transformar los json de fechas y tarifas a un arreglo y posteriormente analizar los registros */
+        
+        $dbHotels[$key]["reservationsInvoice"] = getReservationInvoiceInformation($reservation->reservationID);
+        /** (reservationPayments) Iterar sobre los pagos para generar un texto concentrando los datos del pago  de la reservación */
+        $data3 = $dbHotels[$key]["reservationsInvoice"];
+        $payments = $data3 -> reservationPayments;
+        foreach($payments as $datos){ 
+            $paymentType = $datos -> paymentType;
+            $paymentDescription = $datos -> paymentDescription;
+            $paymentDateTime = $datos -> paymentDateTime;
+            $paymentAmount = $datos -> paymentAmount;
+        }
+
+        $dbHotels[$key]["reservationsNotes"] = getNotes($reservation->reservationID);
+        /* Iterar sobre las notas para generar un texto concentrando las notas en el registro*/
+
+        $data4 = $dbHotels[$key]["reservationsNotes"];
+        foreach ($data4 as $datos){
+            $userName = $datos -> userName;
+            $dateCreated = $datos -> dateCreated;
+            $reservationNote = $datos -> reservationNote;
+        }
     }
     
-    return "<pre>".json_encode($dbHotels,JSON_PRETTY_PRINT)."<pre\>";
+    return "<pre>".json_encode($detailedRoomRates,JSON_PRETTY_PRINT)."<pre\>";
     
 }
 
