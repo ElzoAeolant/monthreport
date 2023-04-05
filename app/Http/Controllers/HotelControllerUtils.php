@@ -20,7 +20,7 @@ function getClientSecret(){
 
 function getReservations($checkinFrom, $checkinTo){
     $api_key = getApiToken();
-    
+
     $head = array("Authorization" => 'Bearer ' . $api_key);
     $endpoint = getApiURL() . 'getReservations';
     $param = array('checkInFrom' => $checkinFrom, 'checkInTo' => $checkinTo);
@@ -29,15 +29,15 @@ function getReservations($checkinFrom, $checkinTo){
     $response = json_decode($response);
     $dbHotels = array();
     
-    $data = $response -> data;
+    $reservations = $response -> data;
 
-    foreach($data  as $key => $reservation){
+    foreach($reservations  as $key => $reservation){
         
         $dbHotels[$key]["reservations"] = $reservation;
         $dbHotels[$key]["reservationsRates"] = getReservationsWithRateDetails($reservation->reservationID);
         /** iterar sobre los cuartos para revisar cada tarifa y el desglose con las fechas */
-        $data2 = $dbHotels[$key]["reservationsRates"];
-        foreach($data2 as $datos){
+        $reservationsRates = $dbHotels[$key]["reservationsRates"];
+        foreach($reservationsRates as $datos){
             $dataRooms = $datos -> rooms;
             foreach($dataRooms as $rooms ){
                 $detailedRoomRates = array();
@@ -49,23 +49,23 @@ function getReservations($checkinFrom, $checkinTo){
         
         $dbHotels[$key]["reservationsInvoice"] = getReservationInvoiceInformation($reservation->reservationID);
         /** (reservationPayments) Iterar sobre los pagos para generar un texto concentrando los datos del pago  de la reservación */
-        $data3 = $dbHotels[$key]["reservationsInvoice"];
-        $payments = $data3 -> reservationPayments;
-        foreach($payments as $datos){ 
-            $paymentType = $datos -> paymentType;
-            $paymentDescription = $datos -> paymentDescription;
-            $paymentDateTime = $datos -> paymentDateTime;
-            $paymentAmount = $datos -> paymentAmount;
+        $reservationsInvoice = $dbHotels[$key]["reservationsInvoice"];
+        $payments = $reservationsInvoice -> reservationPayments;
+        foreach($payments as $payment){ 
+            $paymentType = $payment -> paymentType;
+            $paymentDescription = $payment -> paymentDescription;
+            $paymentDateTime = $payment -> paymentDateTime;
+            $paymentAmount = $payment -> paymentAmount;
         }
 
         $dbHotels[$key]["reservationsNotes"] = getNotes($reservation->reservationID);
         /* Iterar sobre las notas para generar un texto concentrando las notas en el registro*/
 
-        $data4 = $dbHotels[$key]["reservationsNotes"];
-        foreach ($data4 as $datos){
-            $userName = $datos -> userName;
-            $dateCreated = $datos -> dateCreated;
-            $reservationNote = $datos -> reservationNote;
+        $reservationsNotes = $dbHotels[$key]["reservationsNotes"];
+        foreach ($reservationsNotes as $reservationsNote){
+            $userName = $reservationsNote -> userName;
+            $dateCreated = $reservationsNote -> dateCreated;
+            $reservationNote = $reservationsNote -> reservationNote;
         }
     }
     
