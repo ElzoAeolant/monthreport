@@ -23,7 +23,8 @@ function getReservations($checkinFrom, $checkinTo){
 
     $head = array("Authorization" => 'Bearer ' . $api_key);
     $endpoint = getApiURL() . 'getReservations';
-    $param = array('checkInFrom' => $checkinFrom, 'checkInTo' => $checkinTo);
+    #Revisar la lógica para paginación.
+    $param = array('checkInFrom' => $checkinFrom, 'checkInTo' => $checkinTo, 'pageNumber' => 2);
     $response = Http::acceptJson()->withHeaders($head)->get($endpoint,$param);
 
     $response = json_decode($response);
@@ -69,7 +70,7 @@ function getReservations($checkinFrom, $checkinTo){
         }
     }
     
-    return "<pre>".json_encode($detailedRoomRates,JSON_PRETTY_PRINT)."<pre\>";
+    return "<pre>".json_encode($dbHotels,JSON_PRETTY_PRINT)."<pre\>";
     
 }
 
