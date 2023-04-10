@@ -3,6 +3,7 @@
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rules\Exists;
+use League\CommonMark\Node\Query\AndExpr;
 
 use function PHPUnit\Framework\returnSelf;
 
@@ -29,48 +30,47 @@ function getReservations($checkinFrom, $checkinTo){
     $response = Http::acceptJson()->withHeaders($head)->get($endpoint,$param);
 
     $response = json_decode($response);
-    $dbHotels = array();
-    
+    $dbReservations = array();
+    $dbReservations_otherMonth = array();
+    $dbReservations_simples = array();
+    $dbReservations_canceled = array();
     $reservations = $response -> data;
 
     foreach($reservations  as $key => $reservation){
         
-        //$dbHotels[$key]["reservations"] = $reservation;
-        $dbHotels[$key] = array();
-        $dbHotels[$key]['reservationID'] = $reservation -> reservationID;
-        $dbHotels[$key]['status'] = $reservation -> status;
-        $dbHotels[$key]['startDate'] = $reservation -> startDate;
-        $dbHotels[$key]['endDate'] = $reservation -> endDate;
-        $dbHotels[$key]['adults'] = $reservation -> adults;
-        $dbHotels[$key]['children'] = $reservation -> children;
-        $dbHotels[$key]['sourceName'] = $reservation -> sourceName;
+        //$dbReservations[$key]["reservations"] = $reservation;
+        $dbReservations[$key] = array();
+        $dbReservations[$key]['reservationID'] = $reservation -> reservationID;
+        $dbReservations[$key]['status'] = $reservation -> status;
+        $dbReservations[$key]['startDate'] = $reservation -> startDate;
+        $dbReservations[$key]['endDate'] = $reservation -> endDate;
+        $dbReservations[$key]['adults'] = $reservation -> adults;
+        $dbReservations[$key]['children'] = $reservation -> children;
+        $dbReservations[$key]['sourceName'] = $reservation -> sourceName;
         
 
-        //$dbHotels[$key]["reservationsRates"] = getReservationsWithRateDetails($reservation->reservationID);
+        //$dbReservations[$key]["reservationsRates"] = getReservationsWithRateDetails($reservation->reservationID);
         /** iterar sobre los cuartos para revisar cada tarifa y el desglose con las fechas */
 
         $reservationsRates = getReservationsWithRateDetails($reservation->reservationID);
         
         foreach($reservationsRates as $datos){
             if(isset($datos -> sourceReservationID)){
-                $dbHotels[$key]['sourceReservationID'] = $datos -> sourceReservationID;
+                $dbReservations[$key]['sourceReservationID'] = $datos -> sourceReservationID;
             }
-            //
-    
             $dataRooms = $datos -> rooms;
-            foreach($dataRooms as $rooms ){
-
-                $dbHotels[$key]['roomID'] = $rooms -> roomID;       
-                $dbHotels[$key]['roomType'] = "[" . $dbHotels[$key]['roomID'] . "] " . $rooms -> rateName;
-                $detailedRoomRates = array();
-                $detailedRoomRates = $rooms -> detailedRoomRates;
-                
+            $dbReservations[$key]['rooms']=array();
+            foreach($dataRooms as $roomIdx => $rooms ){
+                $dbReservations[$key]['rooms'][$roomIdx] = array();
+                $dbReservations[$key]['rooms'][$roomIdx]['roomID'] = $rooms -> roomID;       
+                $dbReservations[$key]['rooms'][$roomIdx]['roomType'] = "[" . $rooms -> roomID . "] " . $rooms -> rateName;
+                $dbReservations[$key]['rooms'][$roomIdx]['roomRates'] = $rooms -> detailedRoomRates;
             }
         }
 
         /** json_decode puede servir para transformar los json de fechas y tarifas a un arreglo y posteriormente analizar los registros */
         
-        //$dbHotels[$key]["reservationsInvoice"] = getReservationInvoiceInformation($reservation->reservationID);
+        //$dbReservations[$key]["reservationsInvoice"] = getReservationInvoiceInformation($reservation->reservationID);
 
         /** (reservationPayments) Iterar sobre los pagos para generar un texto concentrando los datos del pago  de la reservación */
         $reservationsInvoice = getReservationInvoiceInformation($reservation->reservationID);;
@@ -82,24 +82,24 @@ function getReservations($checkinFrom, $checkinTo){
             $paymentDescription = $payment -> paymentDescription;
             $paymentDateTime = $payment -> paymentDateTime;
             $paymentAmount = $payment -> paymentAmount;
-            $dbHotels[$key]['PaymentComments'] = "[" . $paymentType . "] " . $paymentDescription . ": " . $paymentDateTime . " - " . $paymentAmount . "\n";
+            $dbReservations[$key]['PaymentComments'] = "[" . $paymentType . "] " . $paymentDescription . ": " . $paymentDateTime . " - " . $paymentAmount . "\n";
         }
         foreach($invoiceReservationRooms as $reservationRooms){
-            $dbHotels[$key]["nights"] = $reservationRooms -> nights;
-            $dbHotels[$key]['subtotal'] = $reservationRooms -> roomTotal;
-            $dbHotels[$key]['indexPriceNight'] = $dbHotels[$key]['subtotal'] / $dbHotels[$key]["nights"] ;
-            $dbHotels[$key]['IVA'] = $dbHotels[$key]['subtotal'] * 0.16;
-            $dbHotels[$key]['ISH'] = $dbHotels[$key]['subtotal'] * 0.03;
-            $dbHotels[$key]['TotalTax'] = $dbHotels[$key]['subtotal'] * 0.19;
-            $dbHotels[$key]['Total'] = $dbHotels[$key]['subtotal'] + $dbHotels[$key]['TotalTax'];
+            $dbReservations[$key]["nights"] = $reservationRooms -> nights;
+            $dbReservations[$key]['subtotal'] = $reservationRooms -> roomTotal;
+            $dbReservations[$key]['indexPriceNight'] = $dbReservations[$key]['subtotal'] / $dbReservations[$key]["nights"] ;
+            $dbReservations[$key]['IVA'] = $dbReservations[$key]['subtotal'] * 0.16;
+            $dbReservations[$key]['ISH'] = $dbReservations[$key]['subtotal'] * 0.03;
+            $dbReservations[$key]['TotalTax'] = $dbReservations[$key]['subtotal'] * 0.19;
+            $dbReservations[$key]['Total'] = $dbReservations[$key]['subtotal'] + $dbReservations[$key]['TotalTax'];
         }
         
-        $dbHotels[$key]['extras'] = $invoiceBalanceDetailed -> additionalItems;
-        $dbHotels[$key]['paid'] = $invoiceBalanceDetailed -> paid;
-        $dbHotels[$key]['adjustments'] = $reservationsInvoice -> reservationAdjustmentsTotal;
+        $dbReservations[$key]['extras'] = $invoiceBalanceDetailed -> additionalItems;
+        $dbReservations[$key]['paid'] = $invoiceBalanceDetailed -> paid;
+        $dbReservations[$key]['adjustments'] = $reservationsInvoice -> reservationAdjustmentsTotal;
 
 
-        //$dbHotels[$key]["reservationsNotes"] = getNotes($reservation->reservationID);
+        //$dbReservations[$key]["reservationsNotes"] = getNotes($reservation->reservationID);
 
         /* Iterar sobre las notas para generar un texto concentrando las notas en el registro*/
 
@@ -108,27 +108,41 @@ function getReservations($checkinFrom, $checkinTo){
             $userName = $reservationsNote -> userName;
             $dateCreated = $reservationsNote -> dateCreated;
             $reservationNote = $reservationsNote -> reservationNote;
-            $dbHotels[$key]['Notes'] = "[" . $userName . "] " . $dateCreated . ": " . $reservationNote . "\n" ;
+            $dbReservations[$key]['Notes'] = "[" . $userName . "] " . $dateCreated . ": " . $reservationNote . "\n" ;
         }
-        $dbHotels[$key]['difference'] = $dbHotels[$key]['Total'] - $dbHotels[$key]['paid'];
-        if($dbHotels[$key]['status'] = ("canceled" || "no_show")){
-            $dbHotels_canceled[$key] = $dbHotels[$key];
-        }
-        $dbHotels_otherMonth = array();
+        $dbReservations[$key]['difference'] = $dbReservations[$key]['Total'] - $dbReservations[$key]['paid'];
+       
+    }
+    
+    foreach($dbReservations as $key => $reservation ){
+        //Filtrar por status
+        //Caso cancelados: Guardar solo en dbReservation_canceled
+        if($reservation['status'] == "canceled" || $reservation['status'] == "no_show"){
+            $dbReservations_canceled[$key] = $reservation;
+            //TODO: Falta mandar a drive
+        }else{
+            // Caso no cancelado: 
+            
+           
 
-        $tmpCheckIn = strtotime($dbHotels[$key]['startDate']);
-        $tmpCheckOut = strtotime($dbHotels[$key]['endDate']);
-
-        if($dbHotels[$key]['status'] = ("canceled" || "no_show") && date("m", $tmpCheckIn ) != date("m", $tmpCheckOut)){
-            $dbHotels_otherMonth[$key] = $dbHotels[$key];
-            $dbHotels_otherMonth[$key]["status"] = $dbHotels[$key]["status"];
-            dd($dbHotels_otherMonth);
+            $tmpCheckIn = strtotime($dbReservations[$key]['startDate']);
+            $tmpCheckOut = strtotime($dbReservations[$key]['endDate']);
+    
+                if(date("m", $tmpCheckIn ) == date("m", $tmpCheckOut)){
+                    //Reservaciones simples: Mismo mes
+                    $dbReservations_simples[$key] = $reservation;
+                    
+                }else{
+                    //Reservaciones multiples meses.
+                    $dbReservations_otherMonth[$key] = $reservation;
+                }
         }
-        
+                  
+
     }
     
 
-    return "<pre>".json_encode($dbHotels,JSON_PRETTY_PRINT)."<pre\>";
+    return "<pre>".json_encode($dbReservations_otherMonth,JSON_PRETTY_PRINT)."<pre\>";
     
 }
 
@@ -165,5 +179,9 @@ function getNotes($reservationID){
     $param = array("reservationID" => $reservationID);
     $response = Http::acceptJson()->withHeaders($head)->get($endpoint,$param);
     $response = json_decode($response);
-    return $response -> data;
+    if(isset($response -> data)){
+        return $response -> data;
+    }else{
+        return null;
+    }
 }
