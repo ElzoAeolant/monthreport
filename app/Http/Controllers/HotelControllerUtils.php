@@ -25,7 +25,7 @@ function getReservations($checkinFrom, $checkinTo){
 
     $head = array("Authorization" => 'Bearer ' . $api_key);
     $endpoint = getApiURL() . 'getReservations';
-    //Revisar la lógica para paginación.
+    //TODO: Trabajar en paginación de consultas.
     $param = array('checkInFrom' => $checkinFrom, 'checkInTo' => $checkinTo, 'pageNumber' => 1);
     $response = Http::acceptJson()->withHeaders($head)->get($endpoint,$param);
 
@@ -122,9 +122,6 @@ function getReservations($checkinFrom, $checkinTo){
             //TODO: Falta mandar a drive
         }else{
             // Caso no cancelado: 
-            
-           
-
             $tmpCheckIn = strtotime($dbReservations[$key]['startDate']);
             $tmpCheckOut = strtotime($dbReservations[$key]['endDate']);
     
@@ -135,6 +132,50 @@ function getReservations($checkinFrom, $checkinTo){
                 }else{
                     //Reservaciones multiples meses.
                     $dbReservations_otherMonth[$key] = $reservation;
+                    //dd($dbReservations_otherMonth[$key]["rooms"]);
+                    $formatDate = "d-m-Y";
+                    foreach ($dbReservations_otherMonth[$key]["rooms"] as $room){
+                        $initDate = $tmpCheckIn;
+                        $endDate = $tmpCheckOut;
+                        $sumRate = 0;
+                        foreach($room["roomRates"] as $date => $rate){
+                            $dateTmp = strtotime($date);
+                            if(date("m", $initDate ) == date("m", $dateTmp)){
+                                $sumRate = $sumRate + $rate;
+                            }else{
+                                $endDate = $dateTmp;
+                                //echo ($room["roomID"] . ": " . date($formatDate,$initDate) . "-" . date($formatDate,$endDate) . ":" . $sumRate . "<br>");
+                                $dbReservations_otherMonth[$key] = $reservation;
+                                $dbReservations_otherMonth[$key]['startDate'] = str(date($formatDate,$initDate));
+                                $dbReservations_otherMonth[$key]['endDate'] = str(date($formatDate,$endDate));
+                                $dbReservations_otherMonth[$key]['rooms'] = $room["roomType"] ;   
+                                $dbReservations_otherMonth[$key]['subtotal'] = $sumRate;
+                                $dbReservations_otherMonth[$key]['nights'] = ($endDate - $initDate) / (60*60*24);
+                                $dbReservations_otherMonth[$key]['indexPriceNight'] = $sumRate / $dbReservations_otherMonth[$key]['nights'] ;
+                                $dbReservations_otherMonth[$key]['IVA'] = $sumRate * 0.16;
+                                $dbReservations_otherMonth[$key]['ISH'] = $sumRate * 0.03;
+                                $dbReservations_otherMonth[$key]['TotalTax'] = $sumRate * 0.19;
+                                $dbReservations_otherMonth[$key]['Total'] = $sumRate + $dbReservations_otherMonth[$key]['TotalTax'];
+                                $initDate = $dateTmp;
+                                $sumRate = 0;
+                                $sumRate = $sumRate + $rate;
+                            }
+                        }
+                        $endDate = $tmpCheckOut;
+                        //echo (date($formatDate,$initDate) . "-" . date($formatDate,$endDate) . ":" . $sumRate . "<br>");
+                        $dbReservations_otherMonth[$key+count($dbReservations)] = $reservation;
+                        $dbReservations_otherMonth[$key+count($dbReservations)]['startDate'] = date($formatDate,$initDate);
+                        $dbReservations_otherMonth[$key+count($dbReservations)]['endDate'] = date($formatDate,$endDate);
+                        $dbReservations_otherMonth[$key+count($dbReservations)]['rooms'] = $room["roomType"] ; 
+                        $dbReservations_otherMonth[$key+count($dbReservations)]['subtotal'] = $sumRate;
+                        $dbReservations_otherMonth[$key+count($dbReservations)]['nights'] = ($endDate - $initDate) / (60*60*24);
+                        $dbReservations_otherMonth[$key+count($dbReservations)]['indexPriceNight'] = $sumRate / $dbReservations_otherMonth[$key]['nights'] ;
+                        $dbReservations_otherMonth[$key+count($dbReservations)]['IVA'] = $sumRate * 0.16;
+                        $dbReservations_otherMonth[$key+count($dbReservations)]['ISH'] = $sumRate * 0.03;
+                        $dbReservations_otherMonth[$key+count($dbReservations)]['TotalTax'] = $sumRate * 0.19;
+                        $dbReservations_otherMonth[$key+count($dbReservations)]['Total'] = $sumRate + $dbReservations_otherMonth[$key]['TotalTax'];
+                        
+                    }
                 }
         }
                   
