@@ -22,14 +22,29 @@ function getClientSecret(){
 
 function getReservations($checkinFrom, $checkinTo){
     $api_key = getApiToken();
-
+    //TODO: Trabajar en paginación de consultas.
     $head = array("Authorization" => 'Bearer ' . $api_key);
     $endpoint = getApiURL() . 'getReservations';
-    //TODO: Trabajar en paginación de consultas.
-    $param = array('checkInFrom' => $checkinFrom, 'checkInTo' => $checkinTo, 'pageNumber' => 1);
+    
+    $param = array('checkInFrom' => $checkinFrom, 'checkInTo' => $checkinTo);
     $response = Http::acceptJson()->withHeaders($head)->get($endpoint,$param);
-
     $response = json_decode($response);
+    
+    if($response->total > 100){
+        $pagination = $response->total / 100;
+        $paginationRound = ceil($pagination);
+    }else{
+        $paginationRound = 1;
+    }
+    for($page = 1; $page <= $paginationRound ;  $page++){
+        $api_key = getApiToken();
+        $head = array("Authorization" => 'Bearer ' . $api_key);
+        $endpoint = getApiURL() . 'getReservations';
+        $param = array('checkInFrom' => $checkinFrom, 'checkInTo' => $checkinTo, 'pageNumber' => $page);
+        $response = Http::acceptJson()->withHeaders($head)->get($endpoint,$param);
+        $response = json_decode($response);
+    
+
     $dbReservations = array();
     $dbReservations_otherMonth = array();
     $dbReservations_simples = array();
@@ -197,10 +212,10 @@ function getReservations($checkinFrom, $checkinTo){
         }
                   
 
-    }
+    }}
     
 
-    return "<pre>".json_encode($dbReservations_simples,JSON_PRETTY_PRINT)."<pre\>";
+    return "<pre>".json_encode($dbReservations_otherMonth,JSON_PRETTY_PRINT)."<pre\>";
     
 }
 
