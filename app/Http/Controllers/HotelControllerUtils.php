@@ -128,7 +128,24 @@ function getReservations($checkinFrom, $checkinTo){
                 if(date("m", $tmpCheckIn ) == date("m", $tmpCheckOut)){
                     //Reservaciones simples: Mismo mes
                     $dbReservations_simples[$key] = $reservation;
-                    
+                    foreach ($dbReservations_simples[$key]["rooms"] as $room){
+                        $initDate = $tmpCheckIn;
+                        $endDate = $tmpCheckOut;
+                        $sumRate = 0;
+                        foreach($room["roomRates"] as $date => $rate){
+                            $dateTmp = strtotime($date);
+                            if(date("m", $initDate ) == date("m", $dateTmp)){
+                                $sumRate = $sumRate + $rate;
+                                $dbReservations_simples[$key]['subtotal'] = $sumRate;
+                                $dbReservations_simples[$key]['nights'] = ($endDate - $initDate) / (60*60*24);
+                                $dbReservations_simples[$key]['indexPriceNight'] = $sumRate / $dbReservations_simples[$key]['nights'] ;
+                                $dbReservations_simples[$key]['IVA'] = $sumRate * 0.16;
+                                $dbReservations_simples[$key]['ISH'] = $sumRate * 0.03;
+                                $dbReservations_simples[$key]['TotalTax'] = $sumRate * 0.19;
+                                $dbReservations_simples[$key]['Total'] = $sumRate + $dbReservations_simples[$key]['TotalTax'];
+                                $dbReservations_simples[$key]['rooms'] = $room["roomType"] ; 
+                            }
+                    }}
                 }else{
                     //Reservaciones multiples meses.
                     $dbReservations_otherMonth[$key] = $reservation;
@@ -183,7 +200,7 @@ function getReservations($checkinFrom, $checkinTo){
     }
     
 
-    return "<pre>".json_encode($dbReservations_otherMonth,JSON_PRETTY_PRINT)."<pre\>";
+    return "<pre>".json_encode($dbReservations_simples,JSON_PRETTY_PRINT)."<pre\>";
     
 }
 
