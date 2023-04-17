@@ -48,7 +48,7 @@ class HotelController extends Controller
         $this->authorize('manage-items', User::class);
 
         //$result = getApiToken();
-        $result = getReservations('2023-02-28','2023-03-01');
+        $result = getReservations('2023-02-28','2023-03-15');
 
         $data = $result;
         return view('hotels.index',['data' => $data]);
