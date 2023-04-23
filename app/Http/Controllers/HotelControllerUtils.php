@@ -157,9 +157,13 @@ function getReservations($checkinFrom, $checkinTo){
                                     $dbReservations_simples[$key]['TotalTax'] = $sumRate * 0.19;
                                     $dbReservations_simples[$key]['Total'] = $sumRate + $dbReservations_simples[$key]['TotalTax'];
                                     $dbReservations_simples[$key]['rooms'] = $room["roomType"] ; 
+                                    $dbReservations_simples[$key]['flowCase'] = "1" ; 
+                                    $dbReservations_simples[$key]['MesAnterior'] = "NO"; 
                                     //Out of pool
                                     if(strpos($dbReservations_simples[$key]['rooms'], "424789")){
                                         $dbReservation_outPool[$key] = $dbReservations_simples[$key];
+                                        $dbReservation_outPool[$key]['flowCase'] = "5" ; 
+                                        $dbReservation_outPool[$key]['MesAnterior'] = "NO";
                                         //unset($dbReservations_simples[$key]);
                                     }
                                 }
@@ -192,12 +196,17 @@ function getReservations($checkinFrom, $checkinTo){
                                     $dbReservations_otherMonth[$key]['ISH'] = $sumRate * 0.03;
                                     $dbReservations_otherMonth[$key]['TotalTax'] = $sumRate * 0.19;
                                     $dbReservations_otherMonth[$key]['Total'] = $sumRate + $dbReservations_otherMonth[$key]['TotalTax'];
+                                    $dbReservations_otherMonth[$key]['flowCase'] = "2" ; 
+                                    $dbReservations_otherMonth[$key]['MesAnterior'] = "X"; 
                                     $initDate = $dateTmp;
                                     $sumRate = 0;
                                     $sumRate = $sumRate + $rate;
                                     //Out of pool
+                                    //TODO: Eliminar registro de out of pool
                                     if(strpos($dbReservations_otherMonth[$key]['rooms'], "424789")){
                                         $dbReservation_outPool[$key] = $dbReservations_otherMonth[$key];
+                                        $dbReservation_outPool[$key]['flowCase'] = "4" ; 
+                                        $dbReservation_outPool[$key]['MesAnterior'] = "SI";
                                         //unset($dbReservations_otherMonth[$key]);
                                     }
                                 }
@@ -214,13 +223,15 @@ function getReservations($checkinFrom, $checkinTo){
                             $dbReservations_otherMonth[$key + $response->total]['ISH'] = $sumRate * 0.03;
                             $dbReservations_otherMonth[$key + $response->total]['TotalTax'] = $sumRate * 0.19;
                             $dbReservations_otherMonth[$key + $response->total]['Total'] = $sumRate + $dbReservations_otherMonth[$key]['TotalTax'];
+                            $dbReservations_otherMonth[$key + $response->tota]['flowCase'] = "3" ; 
+                            $dbReservations_otherMonth[$key + $response->tota]['MesAnterior'] = "SI";
                     }
                 }
         }
     }
 }
     
-    return "<pre>".json_encode(array_merge($dbReservations_canceled),JSON_PRETTY_PRINT)."<pre\>";
+    return "<pre>".json_encode(array_merge($dbReservation_outPool),JSON_PRETTY_PRINT)."<pre\>";
     
 }
 
