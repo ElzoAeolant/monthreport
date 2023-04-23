@@ -10,6 +10,7 @@ use Carbon\Carbon;
 
 class LogsExport implements FromCollection,WithHeadings
 {
+    //FAlta meter onstructor que reciba el arrebglo a exportar
 
     public function headings():array{
         $headers = array();
