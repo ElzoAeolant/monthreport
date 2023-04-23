@@ -45,7 +45,7 @@ class LogsExport implements FromCollection,WithHeadings
         return $headers;
     }
 
-    /**
+    /*
     * @return \Illuminate\Support\Collection
     */
     public function collection()

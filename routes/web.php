@@ -46,10 +46,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('hotel/report', 'HotelController@report')->name("hotel.report");
     Route::get('{page}', 'PageController@index')->name('page.index');
 
-    Route::get('/monthly-report/export', function (Request $request) {
-    $data = $request->input('data');
-    return Excel::download(new LogsExport($data), 'monthly-report.xlsx');
-})->name("report.export");
+    Route::get('/monthly-report/export','HotelController@export')->name("report.export");
 
 
     

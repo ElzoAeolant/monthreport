@@ -4,8 +4,12 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rules\Exists;
 use League\CommonMark\Node\Query\AndExpr;
-
+use Illuminate\Support\Collection;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use function PHPUnit\Framework\returnSelf;
+use App\Http\Controllers\exportArray;
+
 
 function getApiURL(){
     return 'https://hotels.cloudbeds.com/api/v1.1/';
@@ -21,6 +25,10 @@ function getClientSecret(){
 }
 
 function getReservations($checkinFrom, $checkinTo){
+    $spreadsheet = new Spreadsheet();
+    
+    $checkIns = $spreadsheet->getActiveSheet();
+
     $api_key = getApiToken();
     $head = array("Authorization" => 'Bearer ' . $api_key);
     $endpoint = getApiURL() . 'getReservations';
@@ -40,6 +48,9 @@ function getReservations($checkinFrom, $checkinTo){
     $dbReservations_simples = array();
     $dbReservations_canceled = array();
     $dbReservation_outPool = array();
+    
+    $row = 2;
+    
     for($page = 1; $page <= $paginationRound ;  $page++){
         $api_key = getApiToken();
         $head = array("Authorization" => 'Bearer ' . $api_key);
@@ -155,7 +166,15 @@ function getReservations($checkinFrom, $checkinTo){
                                     unset ($dbReservations_simples[$key]['rooms'] );
                                     $dbReservations_simples[$key]['flowCase'] = "1" ; 
                                     $dbReservations_simples[$key]['MesAnterior'] = "NO"; 
+                                    
+                                    /*$checkIns->setCellValue('A' . $row, $reservation['reservationID']);
+                                    $checkIns->setCellValue('B' . $row, $reservation['status']);
+                                    $checkIns->setCellValue('C' . $row, $reservation['subtotal']);*/
+                                    $row++;
+                                    
                                 }      
+
+                                //exportArray($dbReservations_simples);
                             }
                             //Out of pool
                             if(strpos($dbReservations_simples[$key]['room'], "424789")){
@@ -225,7 +244,9 @@ function getReservations($checkinFrom, $checkinTo){
                 }
         }
     }
-}
+    /*$reservations_simples = collect($dbReservations_simples);
+    dd($reservations_simples);*/
+}   return array_merge($dbReservation_outPool, $dbReservations_simples);
     //TODO: Agregar la sección de productos. 
     return "<pre>".json_encode(array_merge($dbReservation_outPool, $dbReservations_simples),JSON_PRETTY_PRINT)."<pre\>";
     
@@ -270,3 +291,4 @@ function getNotes($reservationID){
         return null;
     }
 }
+
