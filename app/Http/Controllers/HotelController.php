@@ -58,6 +58,7 @@ class HotelController extends Controller
             //Excel::download(new LogsExport(DB), 'logs.xlsx');
         $data = $result;
         return view('hotels.index',['data' => $data]);
+        return view('monthly_report', ['report' => $data]);
     }
 
     /**

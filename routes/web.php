@@ -9,7 +9,9 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-
+use App\Exports\MonthlyReportExport;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 Auth::routes([
     'register' => false, // Register Routes...
@@ -42,10 +44,15 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('user', 'UserController', ['except' => ['show']]);
     Route::resource('hotel', 'HotelController', ['except' => ['show']]);
     Route::get('hotel/report', 'HotelController@report')->name("hotel.report");
-    
-   
-
     Route::get('{page}', 'PageController@index')->name('page.index');
+
+    Route::get('/monthly-report/export', function (Request $request) {
+    $data = $request->input('data');
+    return Excel::download(new LogsExport($data), 'monthly-report.xlsx');
+})->name("report.export");
+
 
     
 });
+ 
+

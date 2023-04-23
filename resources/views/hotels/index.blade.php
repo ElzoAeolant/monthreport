@@ -18,7 +18,7 @@
                                 @can('create', App\Tag::class)
                                     <div class="col-4 text-right">
                                         <a href="{{ route('hotel.report') }}" class="btn btn-sm btn-primary">{{ __('Create Report') }}</a>
-                                        <a href="{{ route('hotel.report') }}" class="btn btn-sm btn-primary">{{ __('Export Report') }}</a>
+                                        <a href="{{ route('report.export', ['data' => json_encode($data)]) }}" class="btn btn-primary">Export to Excel</a>
                                     </div>
                                 @endcan
                             </div>
