@@ -159,16 +159,18 @@ function getReservations($checkinFrom, $checkinTo){
                                     $dbReservations_simples[$key]['rooms'] = $room["roomType"] ; 
                                     $dbReservations_simples[$key]['flowCase'] = "1" ; 
                                     $dbReservations_simples[$key]['MesAnterior'] = "NO"; 
-                                    //Out of pool
-                                    if(strpos($dbReservations_simples[$key]['rooms'], "424789")){
-                                        $dbReservation_outPool[$key] = $dbReservations_simples[$key];
-                                        $dbReservation_outPool[$key]['flowCase'] = "5" ; 
-                                        $dbReservation_outPool[$key]['MesAnterior'] = "NO";
-                                        //unset($dbReservations_simples[$key]);
-                                    }
                                 }
                                 
-                        }}
+                        }
+                        //Out of pool
+                        if(strpos($dbReservations_simples[$key]['rooms'], "424789")){
+                            $dbReservation_outPool[$key] = $dbReservations_simples[$key];
+                            $dbReservation_outPool[$key]['flowCase'] = "5" ; 
+                            $dbReservation_outPool[$key]['MesAnterior'] = "NO";
+                            unset($dbReservations_simples[$key]);
+                        }
+                        
+                    }
                     }else{
                         //Reservaciones multiples meses.
                         $dbReservations_otherMonth[$key] = $reservation;
@@ -201,15 +203,15 @@ function getReservations($checkinFrom, $checkinTo){
                                     $initDate = $dateTmp;
                                     $sumRate = 0;
                                     $sumRate = $sumRate + $rate;
-                                    //Out of pool
-                                    //TODO: Eliminar registro de out of pool
-                                    if(strpos($dbReservations_otherMonth[$key]['rooms'], "424789")){
-                                        $dbReservation_outPool[$key] = $dbReservations_otherMonth[$key];
-                                        $dbReservation_outPool[$key]['flowCase'] = "4" ; 
-                                        $dbReservation_outPool[$key]['MesAnterior'] = "SI";
-                                        //unset($dbReservations_otherMonth[$key]);
-                                    }
+                                    
                                 }
+                            }
+                            //Out of pool
+                            if(strpos($dbReservations_otherMonth[$key]['rooms'], "424789")){
+                                $dbReservation_outPool[$key] = $dbReservations_otherMonth[$key];
+                                $dbReservation_outPool[$key]['flowCase'] = "4" ; 
+                                $dbReservation_outPool[$key]['MesAnterior'] = "SI";
+                                unset($dbReservations_otherMonth[$key]);
                             }
                             $endDate = $tmpCheckOut;
                             $dbReservations_otherMonth[$key + $response->total] = $reservation;
@@ -230,8 +232,8 @@ function getReservations($checkinFrom, $checkinTo){
         }
     }
 }
-    
-    return "<pre>".json_encode(array_merge($dbReservation_outPool),JSON_PRETTY_PRINT)."<pre\>";
+    //TODO: Agregar la sección de productos. 
+    return "<pre>".json_encode(array_merge($dbReservation_outPool, $dbReservations_simples),JSON_PRETTY_PRINT)."<pre\>";
     
 }
 
