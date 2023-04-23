@@ -25,10 +25,12 @@ require_once "HotelControllerUtils.php";
 
 class HotelController extends Controller
 {
-    public function __construct()
+    
+    /*public function __construct()
     {
         $this->authorizeResource(Tag::class);
-    }
+        $this->db = array();
+    }*/
 
     /**
      * Display a listing of the tags
@@ -48,8 +50,12 @@ class HotelController extends Controller
         $this->authorize('manage-items', User::class);
 
         //$result = getApiToken();
-        $result = getReservations('2023-02-27','2023-03-06');
-
+        $result = getReservations('2023-03-06','2023-03-06');
+            /*
+                DB['reservatonssimple'] = array();
+                DB['outofpool']
+             */
+            //Excel::download(new LogsExport(DB), 'logs.xlsx');
         $data = $result;
         return view('hotels.index',['data' => $data]);
     }

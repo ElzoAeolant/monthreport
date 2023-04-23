@@ -51,7 +51,6 @@ function getReservations($checkinFrom, $checkinTo){
 
         foreach($reservations[$page]  as $key => $reservation){
             
-            //$dbReservations[$key]["reservations"] = $reservation;
             $dbReservations[$key] = array();
             $dbReservations[$key]['reservationID'] = $reservation -> reservationID;
             $dbReservations[$key]['status'] = $reservation -> status;
@@ -60,7 +59,6 @@ function getReservations($checkinFrom, $checkinTo){
             $dbReservations[$key]['adults'] = $reservation -> adults;
             $dbReservations[$key]['children'] = $reservation -> children;
             $dbReservations[$key]['sourceName'] = $reservation -> sourceName;
-            //$dbReservations[$key]["reservationsRates"] = getReservationsWithRateDetails($reservation->reservationID);
             /** iterar sobre los cuartos para revisar cada tarifa y el desglose con las fechas */
             
             $reservationsRates = getReservationsWithRateDetails($reservation->reservationID);
@@ -81,7 +79,6 @@ function getReservations($checkinFrom, $checkinTo){
 
             /** json_decode puede servir para transformar los json de fechas y tarifas a un arreglo y posteriormente analizar los registros */
             
-            //$dbReservations[$key]["reservationsInvoice"] = getReservationInvoiceInformation($reservation->reservationID);
 
             /** (reservationPayments) Iterar sobre los pagos para generar un texto concentrando los datos del pago  de la reservación */
             $reservationsInvoice = getReservationInvoiceInformation($reservation->reservationID);;
@@ -109,8 +106,6 @@ function getReservations($checkinFrom, $checkinTo){
             $dbReservations[$key]['paid'] = $invoiceBalanceDetailed -> paid;
             $dbReservations[$key]['adjustments'] = $reservationsInvoice -> reservationAdjustmentsTotal;
 
-
-            //$dbReservations[$key]["reservationsNotes"] = getNotes($reservation->reservationID);
 
             /* Iterar sobre las notas para generar un texto concentrando las notas en el registro*/
 
@@ -156,21 +151,20 @@ function getReservations($checkinFrom, $checkinTo){
                                     $dbReservations_simples[$key]['ISH'] = $sumRate * 0.03;
                                     $dbReservations_simples[$key]['TotalTax'] = $sumRate * 0.19;
                                     $dbReservations_simples[$key]['Total'] = $sumRate + $dbReservations_simples[$key]['TotalTax'];
-                                    $dbReservations_simples[$key]['rooms'] = $room["roomType"] ; 
+                                    $dbReservations_simples[$key]['room'] = $room["roomType"] ; 
+                                    unset ($dbReservations_simples[$key]['rooms'] );
                                     $dbReservations_simples[$key]['flowCase'] = "1" ; 
                                     $dbReservations_simples[$key]['MesAnterior'] = "NO"; 
-                                }
-                                
+                                }      
+                            }
+                            //Out of pool
+                            if(strpos($dbReservations_simples[$key]['room'], "424789")){
+                                $dbReservation_outPool[$key] = $dbReservations_simples[$key];
+                                $dbReservation_outPool[$key]['flowCase'] = "5" ; 
+                                $dbReservation_outPool[$key]['MesAnterior'] = "NO";
+                                unset($dbReservations_simples[$key]);
+                            }
                         }
-                        //Out of pool
-                        if(strpos($dbReservations_simples[$key]['rooms'], "424789")){
-                            $dbReservation_outPool[$key] = $dbReservations_simples[$key];
-                            $dbReservation_outPool[$key]['flowCase'] = "5" ; 
-                            $dbReservation_outPool[$key]['MesAnterior'] = "NO";
-                            unset($dbReservations_simples[$key]);
-                        }
-                        
-                    }
                     }else{
                         //Reservaciones multiples meses.
                         $dbReservations_otherMonth[$key] = $reservation;
@@ -190,7 +184,7 @@ function getReservations($checkinFrom, $checkinTo){
                                     $dbReservations_otherMonth[$key] = $reservation;
                                     $dbReservations_otherMonth[$key]['startDate'] = str(date($formatDate,$initDate));
                                     $dbReservations_otherMonth[$key]['endDate'] = str(date($formatDate,$endDate));
-                                    $dbReservations_otherMonth[$key]['rooms'] = $room["roomType"] ;   
+                                    $dbReservations_otherMonth[$key]['room'] = $room["roomType"] ;   
                                     $dbReservations_otherMonth[$key]['subtotal'] = $sumRate;
                                     $dbReservations_otherMonth[$key]['nights'] = ($endDate - $initDate) / (60*60*24);
                                     $dbReservations_otherMonth[$key]['indexPriceNight'] = $sumRate / $dbReservations_otherMonth[$key]['nights'] ;
@@ -207,7 +201,7 @@ function getReservations($checkinFrom, $checkinTo){
                                 }
                             }
                             //Out of pool
-                            if(strpos($dbReservations_otherMonth[$key]['rooms'], "424789")){
+                            if(strpos($dbReservations_otherMonth[$key]['room'], "424789")){
                                 $dbReservation_outPool[$key] = $dbReservations_otherMonth[$key];
                                 $dbReservation_outPool[$key]['flowCase'] = "4" ; 
                                 $dbReservation_outPool[$key]['MesAnterior'] = "SI";
@@ -217,7 +211,7 @@ function getReservations($checkinFrom, $checkinTo){
                             $dbReservations_otherMonth[$key + $response->total] = $reservation;
                             $dbReservations_otherMonth[$key + $response->total]['startDate'] = date($formatDate,$initDate);
                             $dbReservations_otherMonth[$key + $response->total]['endDate'] = date($formatDate,$endDate);
-                            $dbReservations_otherMonth[$key + $response->total]['rooms'] = $room["roomType"] ; 
+                            $dbReservations_otherMonth[$key + $response->total]['room'] = $room["roomType"] ; 
                             $dbReservations_otherMonth[$key + $response->total]['subtotal'] = $sumRate;
                             $dbReservations_otherMonth[$key + $response->total]['nights'] = ($endDate - $initDate) / (60*60*24);
                             $dbReservations_otherMonth[$key + $response->total]['indexPriceNight'] = $sumRate / $dbReservations_otherMonth[$key]['nights'] ;

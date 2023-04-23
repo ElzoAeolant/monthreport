@@ -18,6 +18,7 @@
                                 @can('create', App\Tag::class)
                                     <div class="col-4 text-right">
                                         <a href="{{ route('hotel.report') }}" class="btn btn-sm btn-primary">{{ __('Create Report') }}</a>
+                                        <a href="{{ route('hotel.report') }}" class="btn btn-sm btn-primary">{{ __('Export Report') }}</a>
                                     </div>
                                 @endcan
                             </div>
