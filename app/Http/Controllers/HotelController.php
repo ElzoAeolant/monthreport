@@ -20,11 +20,15 @@ namespace App\Http\Controllers;
 use App\Models\Tag;
 use App\Models\User;
 use App\Http\Requests\TagRequest;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ReservationExport;
+
 require_once "HotelControllerUtils.php";
 
 
 class HotelController extends Controller
 {
+    protected $dbReservation;
     
     /*public function __construct()
     {
@@ -56,6 +60,8 @@ class HotelController extends Controller
                 DB['outofpool']
              */
             //Excel::download(new LogsExport(DB), 'logs.xlsx');
+        $this->dbReservation = $result;
+        return Excel::download(new ReservationExport(collect($this->dbReservation)), 'reservations.xlsx');
         $data = $result;
         return view('hotels.index',['data' => $data]);
         return view('monthly_report', ['report' => $data]);
@@ -125,5 +131,10 @@ class HotelController extends Controller
         $tag->delete();
 
         return redirect()->route('tag.index')->withStatus(__('Tag successfully deleted.'));
+    }
+    public function export() 
+    {
+        
+        return Excel::download(new ReservationExport(collect($this->dbReservation)), 'logs.xlsx');
     }
 }
