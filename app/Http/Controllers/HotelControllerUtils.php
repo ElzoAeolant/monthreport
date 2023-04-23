@@ -22,7 +22,6 @@ function getClientSecret(){
 
 function getReservations($checkinFrom, $checkinTo){
     $api_key = getApiToken();
-    //TODO: Trabajar en paginación de consultas.
     $head = array("Authorization" => 'Bearer ' . $api_key);
     $endpoint = getApiURL() . 'getReservations';
     
@@ -36,6 +35,11 @@ function getReservations($checkinFrom, $checkinTo){
     }else{
         $paginationRound = 1;
     }
+    $dbReservations = array();  
+    $dbReservations_otherMonth = array();
+    $dbReservations_simples = array();
+    $dbReservations_canceled = array();
+    $dbReservation_outPool = array();
     for($page = 1; $page <= $paginationRound ;  $page++){
         $api_key = getApiToken();
         $head = array("Authorization" => 'Bearer ' . $api_key);
@@ -43,16 +47,9 @@ function getReservations($checkinFrom, $checkinTo){
         $param = array('checkInFrom' => $checkinFrom, 'checkInTo' => $checkinTo, 'pageNumber' => $page);
         $response = Http::acceptJson()->withHeaders($head)->get($endpoint,$param);
         $response = json_decode($response);        
-    }
+        $reservations[$page] = $response -> data;
 
-        $dbReservations = array();  
-        $dbReservations_otherMonth = array();
-        $dbReservations_simples = array();
-        $dbReservations_canceled = array();
-        $reservations = $response -> data;
-        dd($reservations);
-
-        foreach($reservations  as $key => $reservation){
+        foreach($reservations[$page]  as $key => $reservation){
             
             //$dbReservations[$key]["reservations"] = $reservation;
             $dbReservations[$key] = array();
@@ -63,11 +60,9 @@ function getReservations($checkinFrom, $checkinTo){
             $dbReservations[$key]['adults'] = $reservation -> adults;
             $dbReservations[$key]['children'] = $reservation -> children;
             $dbReservations[$key]['sourceName'] = $reservation -> sourceName;
-            
-
             //$dbReservations[$key]["reservationsRates"] = getReservationsWithRateDetails($reservation->reservationID);
             /** iterar sobre los cuartos para revisar cada tarifa y el desglose con las fechas */
-
+            
             $reservationsRates = getReservationsWithRateDetails($reservation->reservationID);
             
             foreach($reservationsRates as $datos){
@@ -132,16 +127,18 @@ function getReservations($checkinFrom, $checkinTo){
         
         foreach($dbReservations as $key => $reservation ){
             //Filtrar por status
-            //Caso cancelados: Guardar solo en dbReservation_canceled
+            //Caso cancelados: Guardar solo en dbReservation_canceled          
             if($reservation['status'] == "canceled" || $reservation['status'] == "no_show"){
                 $dbReservations_canceled[$key] = $reservation;
+                foreach ($dbReservations_canceled[$key]["rooms"] as $room){
+                    $dbReservations_canceled[$key]['rooms'] = $room["roomType"] ; 
+                }
                 //TODO: Falta mandar a drive
             }else{
                 // Caso no cancelado: 
                 $tmpCheckIn = strtotime($dbReservations[$key]['startDate']);
                 $tmpCheckOut = strtotime($dbReservations[$key]['endDate']);
-        
-                    if(date("m", $tmpCheckIn ) == date("m", $tmpCheckOut)){
+                     if(date("m", $tmpCheckIn ) == date("m", $tmpCheckOut)){
                         //Reservaciones simples: Mismo mes
                         $dbReservations_simples[$key] = $reservation;
                         foreach ($dbReservations_simples[$key]["rooms"] as $room){
@@ -160,7 +157,13 @@ function getReservations($checkinFrom, $checkinTo){
                                     $dbReservations_simples[$key]['TotalTax'] = $sumRate * 0.19;
                                     $dbReservations_simples[$key]['Total'] = $sumRate + $dbReservations_simples[$key]['TotalTax'];
                                     $dbReservations_simples[$key]['rooms'] = $room["roomType"] ; 
+                                    //Out of pool
+                                    if(strpos($dbReservations_simples[$key]['rooms'], "424789")){
+                                        $dbReservation_outPool[$key] = $dbReservations_simples[$key];
+                                        //unset($dbReservations_simples[$key]);
+                                    }
                                 }
+                                
                         }}
                     }else{
                         //Reservaciones multiples meses.
@@ -192,29 +195,32 @@ function getReservations($checkinFrom, $checkinTo){
                                     $initDate = $dateTmp;
                                     $sumRate = 0;
                                     $sumRate = $sumRate + $rate;
+                                    //Out of pool
+                                    if(strpos($dbReservations_otherMonth[$key]['rooms'], "424789")){
+                                        $dbReservation_outPool[$key] = $dbReservations_otherMonth[$key];
+                                        //unset($dbReservations_otherMonth[$key]);
+                                    }
                                 }
                             }
                             $endDate = $tmpCheckOut;
-                            //echo (date($formatDate,$initDate) . "-" . date($formatDate,$endDate) . ":" . $sumRate . "<br>");
-                            $dbReservations_otherMonth[$key+count($dbReservations)] = $reservation;
-                            $dbReservations_otherMonth[$key+count($dbReservations)]['startDate'] = date($formatDate,$initDate);
-                            $dbReservations_otherMonth[$key+count($dbReservations)]['endDate'] = date($formatDate,$endDate);
-                            $dbReservations_otherMonth[$key+count($dbReservations)]['rooms'] = $room["roomType"] ; 
-                            $dbReservations_otherMonth[$key+count($dbReservations)]['subtotal'] = $sumRate;
-                            $dbReservations_otherMonth[$key+count($dbReservations)]['nights'] = ($endDate - $initDate) / (60*60*24);
-                            $dbReservations_otherMonth[$key+count($dbReservations)]['indexPriceNight'] = $sumRate / $dbReservations_otherMonth[$key]['nights'] ;
-                            $dbReservations_otherMonth[$key+count($dbReservations)]['IVA'] = $sumRate * 0.16;
-                            $dbReservations_otherMonth[$key+count($dbReservations)]['ISH'] = $sumRate * 0.03;
-                            $dbReservations_otherMonth[$key+count($dbReservations)]['TotalTax'] = $sumRate * 0.19;
-                            $dbReservations_otherMonth[$key+count($dbReservations)]['Total'] = $sumRate + $dbReservations_otherMonth[$key]['TotalTax'];
-                        
+                            $dbReservations_otherMonth[$key + $response->total] = $reservation;
+                            $dbReservations_otherMonth[$key + $response->total]['startDate'] = date($formatDate,$initDate);
+                            $dbReservations_otherMonth[$key + $response->total]['endDate'] = date($formatDate,$endDate);
+                            $dbReservations_otherMonth[$key + $response->total]['rooms'] = $room["roomType"] ; 
+                            $dbReservations_otherMonth[$key + $response->total]['subtotal'] = $sumRate;
+                            $dbReservations_otherMonth[$key + $response->total]['nights'] = ($endDate - $initDate) / (60*60*24);
+                            $dbReservations_otherMonth[$key + $response->total]['indexPriceNight'] = $sumRate / $dbReservations_otherMonth[$key]['nights'] ;
+                            $dbReservations_otherMonth[$key + $response->total]['IVA'] = $sumRate * 0.16;
+                            $dbReservations_otherMonth[$key + $response->total]['ISH'] = $sumRate * 0.03;
+                            $dbReservations_otherMonth[$key + $response->total]['TotalTax'] = $sumRate * 0.19;
+                            $dbReservations_otherMonth[$key + $response->total]['Total'] = $sumRate + $dbReservations_otherMonth[$key]['TotalTax'];
                     }
                 }
         }
     }
-   
-
-    return "<pre>".json_encode($dbReservations,JSON_PRETTY_PRINT)."<pre\>";
+}
+    
+    return "<pre>".json_encode(array_merge($dbReservations_canceled),JSON_PRETTY_PRINT)."<pre\>";
     
 }
 
