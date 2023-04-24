@@ -20,8 +20,8 @@ class ReservationExport implements FromCollection,WithHeadings
         array_push($headers,"Guest_Name");
         array_push($headers,"Fuente");
         array_push($headers,"Source_ID");
-        array_push($headers,"Source_ID");
-        array_push($headers,"Check_Out");
+        array_push($headers,"CheckIn");
+        array_push($headers,"CheckOut");
         array_push($headers,"Total_de_Noches");
         array_push($headers,"Index precio por noche");
         array_push($headers,"Subtotal");
@@ -32,7 +32,7 @@ class ReservationExport implements FromCollection,WithHeadings
         array_push($headers,"Extras");
         array_push($headers,"Ajustes");
         array_push($headers,"Pagado");
-        array_push($headers,"Comentarios");
+        array_push($headers,"ComentariosPago");
         array_push($headers,"Adults");
         array_push($headers,"Childs");
         array_push($headers,"Status");

@@ -49,20 +49,22 @@ function getReservations($checkinFrom, $checkinTo){
     $dbReservations_canceled = array();
     $dbReservation_outPool = array();
     
-    $row = 2;
-    
+        
     for($page = 1; $page <= $paginationRound ;  $page++){
         $api_key = getApiToken();
         $head = array("Authorization" => 'Bearer ' . $api_key);
         $endpoint = getApiURL() . 'getReservations';
         $param = array('checkInFrom' => $checkinFrom, 'checkInTo' => $checkinTo, 'pageNumber' => $page);
         $response = Http::acceptJson()->withHeaders($head)->get($endpoint,$param);
-        $response = json_decode($response);        
+        $response = json_decode($response);     
+        
         $reservations[$page] = $response -> data;
-
+        
         foreach($reservations[$page]  as $key => $reservation){
             
+            
             $dbReservations[$key] = array();
+            $dbReservations[$key]['guestName'] = $reservation -> guestName;
             $dbReservations[$key]['reservationID'] = $reservation -> reservationID;
             $dbReservations[$key]['status'] = $reservation -> status;
             $dbReservations[$key]['startDate'] = $reservation -> startDate;
@@ -134,10 +136,13 @@ function getReservations($checkinFrom, $checkinTo){
         foreach($dbReservations as $key => $reservation ){
             //Filtrar por status
             //Caso cancelados: Guardar solo en dbReservation_canceled          
-            if($reservation['status'] == "canceled" || $reservation['status'] == "no_show"){
+            if($reservation['status'] == "canceled" Or $reservation['status'] == "no_show"){
                 $dbReservations_canceled[$key] = $reservation;
                 foreach ($dbReservations_canceled[$key]["rooms"] as $room){
-                    $dbReservations_canceled[$key]['rooms'] = $room["roomType"] ; 
+                    $dbReservations_canceled[$key]['room'] = $room["roomType"] ; 
+                    $dbReservations_canceled[$key]['MesAnterior'] = "NA" ; 
+                    $dbReservations_canceled[$key]['flowCase'] = "NA" ; 
+
                 }
                 //TODO: Falta mandar a drive
             }else{
@@ -162,15 +167,13 @@ function getReservations($checkinFrom, $checkinTo){
                                     $dbReservations_simples[$key]['ISH'] = $sumRate * 0.03;
                                     $dbReservations_simples[$key]['TotalTax'] = $sumRate * 0.19;
                                     $dbReservations_simples[$key]['Total'] = $sumRate + $dbReservations_simples[$key]['TotalTax'];
-                                    $dbReservations_simples[$key]['room'] = $room["roomType"] ; 
-                                    unset ($dbReservations_simples[$key]['rooms'] );
+                                    $dbReservations_simples[$key]['room'] = $room["roomType"] ;
                                     $dbReservations_simples[$key]['flowCase'] = "1" ; 
-                                    $dbReservations_simples[$key]['MesAnterior'] = "NO"; 
+                                    $dbReservations_simples[$key]['MesAnterior'] = "NO";  
+                                    unset ($dbReservations_simples[$key]['rooms'] );
                                     
-                                    /*$checkIns->setCellValue('A' . $row, $reservation['reservationID']);
-                                    $checkIns->setCellValue('B' . $row, $reservation['status']);
-                                    $checkIns->setCellValue('C' . $row, $reservation['subtotal']);*/
-                                    $row++;
+                                    
+                                   // dd($dbReservations_simples);
                                     
                                 }      
 
@@ -199,7 +202,6 @@ function getReservations($checkinFrom, $checkinTo){
                                     $sumRate = $sumRate + $rate;
                                 }else{
                                     $endDate = $dateTmp;
-                                    //echo ($room["roomID"] . ": " . date($formatDate,$initDate) . "-" . date($formatDate,$endDate) . ":" . $sumRate . "<br>");
                                     $dbReservations_otherMonth[$key] = $reservation;
                                     $dbReservations_otherMonth[$key]['startDate'] = str(date($formatDate,$initDate));
                                     $dbReservations_otherMonth[$key]['endDate'] = str(date($formatDate,$endDate));
@@ -219,13 +221,17 @@ function getReservations($checkinFrom, $checkinTo){
                                     
                                 }
                             }
-                            //Out of pool
-                            if(strpos($dbReservations_otherMonth[$key]['room'], "424789")){
-                                $dbReservation_outPool[$key] = $dbReservations_otherMonth[$key];
-                                $dbReservation_outPool[$key]['flowCase'] = "4" ; 
-                                $dbReservation_outPool[$key]['MesAnterior'] = "SI";
-                                unset($dbReservations_otherMonth[$key]);
+                            if(isset($dbReservations_otherMonth[$key]['room'])){
+                                //Out of pool
+                                if(strpos($dbReservations_otherMonth[$key]['room'], "424789")){
+                                    $dbReservation_outPool[$key] = $dbReservations_otherMonth[$key];
+                                    $dbReservation_outPool[$key]['flowCase'] = "4" ; 
+                                    $dbReservation_outPool[$key]['MesAnterior'] = "SI";
+                                    unset($dbReservations_otherMonth[$key]);
+                                }
+
                             }
+                            
                             $endDate = $tmpCheckOut;
                             $dbReservations_otherMonth[$key + $response->total] = $reservation;
                             $dbReservations_otherMonth[$key + $response->total]['startDate'] = date($formatDate,$initDate);
@@ -233,23 +239,108 @@ function getReservations($checkinFrom, $checkinTo){
                             $dbReservations_otherMonth[$key + $response->total]['room'] = $room["roomType"] ; 
                             $dbReservations_otherMonth[$key + $response->total]['subtotal'] = $sumRate;
                             $dbReservations_otherMonth[$key + $response->total]['nights'] = ($endDate - $initDate) / (60*60*24);
-                            $dbReservations_otherMonth[$key + $response->total]['indexPriceNight'] = $sumRate / $dbReservations_otherMonth[$key]['nights'] ;
+                            $dbReservations_otherMonth[$key + $response->total]['indexPriceNight'] = $sumRate / $dbReservations_otherMonth[$key + $response->total]['nights'] ;
                             $dbReservations_otherMonth[$key + $response->total]['IVA'] = $sumRate * 0.16;
                             $dbReservations_otherMonth[$key + $response->total]['ISH'] = $sumRate * 0.03;
                             $dbReservations_otherMonth[$key + $response->total]['TotalTax'] = $sumRate * 0.19;
-                            $dbReservations_otherMonth[$key + $response->total]['Total'] = $sumRate + $dbReservations_otherMonth[$key]['TotalTax'];
-                            $dbReservations_otherMonth[$key + $response->tota]['flowCase'] = "3" ; 
-                            $dbReservations_otherMonth[$key + $response->tota]['MesAnterior'] = "SI";
+                            $dbReservations_otherMonth[$key + $response->total]['Total'] = $sumRate + $dbReservations_otherMonth[$key + $response->total]['TotalTax'];
+                            $dbReservations_otherMonth[$key + $response->total]['flowCase'] = "3" ; 
+                            $dbReservations_otherMonth[$key + $response->total]['MesAnterior'] = "SI";
+                            if(isset($dbReservations_otherMonth[$key + $response->total]['room'])){
+                                //Out of pool
+                                if(strpos($dbReservations_otherMonth[$key + $response->total]['room'], "424789")){
+                                    $dbReservation_outPool[$key] = $dbReservations_otherMonth[$key + $response->total];
+                                    $dbReservation_outPool[$key]['flowCase'] = "4" ; 
+                                    $dbReservation_outPool[$key]['MesAnterior'] = "SI";
+                                    unset($dbReservations_otherMonth[$key + $response->total]);
+                                }
+
+                            }
                     }
                 }
         }
     }
+
     /*$reservations_simples = collect($dbReservations_simples);
     dd($reservations_simples);*/
-}   return array_merge($dbReservation_outPool, $dbReservations_simples);
+    $dbSortSimples = sortbyheader($dbReservations_simples);
+    $dbSortOtherMonth = sortbyheader($dbReservations_otherMonth);
+    $dbSortOutOfPool = sortbyheader($dbReservation_outPool);
+    $dbSortCanceled = sortbyheader($dbReservations_canceled);
+}   return array_merge($dbSortSimples, $dbSortOtherMonth, $dbSortOutOfPool, $dbSortCanceled);
     //TODO: Agregar la sección de productos. 
     return "<pre>".json_encode(array_merge($dbReservation_outPool, $dbReservations_simples),JSON_PRETTY_PRINT)."<pre\>";
     
+}
+function sortbyheader($reservations){
+    $dbsortByHeader = array();
+    foreach($reservations as $key => $reservation){
+        $dbsortByHeader[$key] = array();
+        $dbsortByHeader[$key]['ID'] = $reservation['reservationID'];
+
+        if(isset($dbsortByHeader[$key]['Room_ID'])){
+            $dbsortByHeader[$key]['Room_ID'] = $reservation['room'];
+        }else {
+            $dbsortByHeader[$key]['Room_ID'] = "- - - - -";
+        }
+        
+        $dbsortByHeader[$key]['Guest_Name'] = $reservation['guestName'];
+        $dbsortByHeader[$key]['Fuente'] = $reservation['sourceName'];
+        $dbsortByHeader[$key]['Source_ID'] = $reservation['reservationID'];
+        $dbsortByHeader[$key]['CheckIn'] = $reservation['startDate'];
+        $dbsortByHeader[$key]['CheckOut'] = $reservation['endDate'];
+        $dbsortByHeader[$key]['Total_de_Noches'] = $reservation['nights'];
+        $dbsortByHeader[$key]['Index precio por noche'] = $reservation['indexPriceNight'];
+        $dbsortByHeader[$key]['Subtotal'] = $reservation['subtotal'];
+        $dbsortByHeader[$key]['IVA'] = $reservation['IVA'];
+        $dbsortByHeader[$key]['ISH'] = $reservation['ISH'];
+        $dbsortByHeader[$key]['Total Tax'] = $reservation['TotalTax'];
+        $dbsortByHeader[$key]['Total'] = $reservation['Total'];
+        $dbsortByHeader[$key]['Extras'] = $reservation['extras'];
+        $dbsortByHeader[$key]['Ajustes'] = $reservation['adjustments'];
+        $dbsortByHeader[$key]['Pagado'] = $reservation['paid'];
+        if(isset($reservation['PaymentComments'])){
+            $dbsortByHeader[$key]['ComentariosPago'] = $reservation['PaymentComments'];
+        }else {
+            $dbsortByHeader[$key]['ComentariosPago'] = "- - - - -";
+        }
+        
+        $dbsortByHeader[$key]['Adults'] = $reservation['adults'];
+        $dbsortByHeader[$key]['Childs'] = $reservation['children'];
+        $dbsortByHeader[$key]['Status'] = $reservation['status'];
+        $dbsortByHeader[$key]['Pago Total'] = $reservation['paid'];
+        $dbsortByHeader[$key]['Diferencia'] = $reservation['difference'];
+
+        if(isset($reservation['MesAnterior'])){
+            $dbsortByHeader[$key]['Mes Anterior'] = $reservation['MesAnterior'];
+        }else {
+            $dbsortByHeader[$key]['Mes Anterior'] = "- - - - -";
+        }
+        
+        if(isset($reservation['Notes'])){
+            $dbsortByHeader[$key]['Comentarios'] = $reservation['Notes'];
+        }else {
+            $dbsortByHeader[$key]['Comentarios'] = "- - - - -";
+        }
+        
+        if(isset($reservation['flowCase'])){
+            $dbsortByHeader[$key]['FlowCase'] = $reservation['flowCase'];
+        }else {
+            $dbsortByHeader[$key]['FlowCase'] = "- - - - -";
+        }
+        
+        if(isset($reservation['room'])){
+            $dbsortByHeader[$key]['Room Type'] = $reservation['room'];
+        }else {
+            $dbsortByHeader[$key]['Room Type'] = "- - - - -";
+        }
+        
+
+
+
+    }
+
+    return $dbsortByHeader;
 }
 
 function getApiToken(){   

@@ -54,7 +54,7 @@ class HotelController extends Controller
         $this->authorize('manage-items', User::class);
 
         //$result = getApiToken();
-        $result = getReservations('2023-03-06','2023-03-06');
+        $result = getReservations('2023-02-01','2023-02-28');
             /*
                 DB['reservatonssimple'] = array();
                 DB['outofpool']
@@ -135,6 +135,6 @@ class HotelController extends Controller
     public function export() 
     {
         
-        return Excel::download(new ReservationExport(collect($this->dbReservation)), 'logs.xlsx');
+        return Excel::download(new ReservationExport(collect($this->dbReservation)), 'reservation.xlsx');
     }
 }
