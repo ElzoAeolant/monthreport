@@ -52,9 +52,9 @@ class HotelController extends Controller
     public function report()
     {
         $this->authorize('manage-items', User::class);
-
+        
         //$result = getApiToken();
-        $result = getReservations('2023-02-01','2023-02-28');
+        $result = getReservations('2023-01-27','2023-01-28');
             /*
                 DB['reservatonssimple'] = array();
                 DB['outofpool']
