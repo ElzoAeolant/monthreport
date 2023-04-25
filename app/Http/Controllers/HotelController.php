@@ -22,6 +22,8 @@ use App\Models\User;
 use App\Http\Requests\TagRequest;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ReservationExport;
+use Illuminate\Http\Request;
+
 
 require_once "HotelControllerUtils.php";
 
@@ -49,12 +51,18 @@ class HotelController extends Controller
         return view('hotels.index', ['data' => ""]);
     }
 
-    public function report()
+    public function report(Request $request)
     {
+
+        $start_date = $request->input('checkIn');
+        $end_date = $request->input('checkOut');
+
+        //dd($start_date . "--" . $end_date);
         $this->authorize('manage-items', User::class);
         
         //$result = getApiToken();
-        $result = getReservations('2023-01-27','2023-01-28');
+        //$result = getReservations($start_date, $end_date);
+        $result = getReservations('2023-03-28', '2023-03-29');
             /*
                 DB['reservatonssimple'] = array();
                 DB['outofpool']
@@ -137,4 +145,5 @@ class HotelController extends Controller
         
         return Excel::download(new ReservationExport(collect($this->dbReservation)), 'reservation.xlsx');
     }
+   
 }

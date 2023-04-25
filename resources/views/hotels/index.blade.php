@@ -30,14 +30,14 @@
                                 <fieldset>
                                     <div class="col-12 d-flex justify-content-center">
                                         <div style="margin: 0 10px;">
-                                            <label for="checkIn">Fecha 1:</label>
+                                            <label id= "checkIn" for="checkIn">Fecha 1:</label>
                                             <br>
                                             <input type="date" name="checkIn">
                                         </div>
                                         <div style="margin: 0 10px;">
                                             <label for="checkOut">Fecha 2:</label>
                                             <br>
-                                            <input type="date" name="checkOut">
+                                            <input type="date" id="checkOut" name="checkOut">
                                         </div>
                                     </div>
                                 </fieldset>
@@ -46,10 +46,9 @@
                                     <div class="form-group">
                                         <label for="hotel" class="font-weight-bold">Hotel:</label>
                                         <select name="hotel" id="hotel">
-                                            <option value="hotel1">Hotel 1</option>
-                                            <option value="hotel2">Hotel 2</option>
-                                            <option value="hotel3">Hotel 3</option>
-                                            <option value="hotel4">Hotel 4</option>
+                                            <option value="hotel1">Jade</option>
+                                            <option value="hotel2">Ophelia</option>
+                                            
                                         </select>
                                     </div>
                                 </fieldset>

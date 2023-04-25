@@ -45,6 +45,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('hotel', 'HotelController', ['except' => ['show']]);
     Route::get('hotel/report', 'HotelController@report')->name("hotel.report");
     Route::get('{page}', 'PageController@index')->name('page.index');
+    Route::post('/hotel/report', 'HotelController@report')->name('hotel.report');
 
     Route::get('/monthly-report/export','HotelController@export')->name("report.export");
 
