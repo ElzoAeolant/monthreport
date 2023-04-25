@@ -41,6 +41,18 @@
                                         </div>
                                     </div>
                                 </fieldset>
+                                <br>
+                                <fieldset class="text-center">
+                                    <div class="form-group">
+                                        <label for="hotel" class="font-weight-bold">Hotel:</label>
+                                        <select name="hotel" id="hotel">
+                                            <option value="hotel1">Hotel 1</option>
+                                            <option value="hotel2">Hotel 2</option>
+                                            <option value="hotel3">Hotel 3</option>
+                                            <option value="hotel4">Hotel 4</option>
+                                        </select>
+                                    </div>
+                                </fieldset>
 
                                 <fieldset>
                                     <div class="form-group">
