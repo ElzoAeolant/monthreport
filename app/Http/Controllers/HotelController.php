@@ -61,8 +61,8 @@ class HotelController extends Controller
         $this->authorize('manage-items', User::class);
         
         //$result = getApiToken();
-        //$result = getReservations($start_date, $end_date);
-        $result = getReservations('2023-03-28', '2023-03-29');
+        $result = getReservations($start_date, $end_date);
+        //$result = getReservations('2023-03-28', '2023-03-29');
             /*
                 DB['reservatonssimple'] = array();
                 DB['outofpool']
