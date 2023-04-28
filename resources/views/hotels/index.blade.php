@@ -46,8 +46,8 @@
                                     <div class="form-group">
                                         <label for="hotel" class="font-weight-bold">Hotel:</label>
                                         <select name="hotel" id="hotel">
-                                            <option value="hotel1">Jade</option>
-                                            <option value="hotel2">Ophelia</option>
+                                            <option value="Jade">Jade</option>
+                                            <option value="Ophelia">Ophelia</option>
                                             
                                         </select>
                                     </div>

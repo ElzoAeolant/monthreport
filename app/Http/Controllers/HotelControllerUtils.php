@@ -15,26 +15,45 @@ function getApiURL()
 {
     return 'https://hotels.cloudbeds.com/api/v1.1/';
 }
-function getRefreshToken()
+function getRefreshToken($hotel)
 {
-    return "LEDUzczTNnypxyPPkznxcTgwzSWZ1v7dM9uZ6nrTvD0";
+    if($hotel == "Jade")
+    {
+        $msg = "LEDUzczTNnypxyPPkznxcTgwzSWZ1v7dM9uZ6nrTvD0";
+    }else if($hotel == "Ophelia"){
+        $msg = "an7p3tveHk039zUXEP0MT93Z8DRomAb2v4AWeoyVGJk";
+    }
+    return $msg;
 }
-function getClientId()
+function getClientId($hotel)
 {
-    return "live1_215504_UvykDRiC70YNOdoM5TsnAhzP";
+    if($hotel == "Jade")
+    {
+        $msg = "live1_215504_UvykDRiC70YNOdoM5TsnAhzP";
+    }else if($hotel == "Ophelia"){
+        $msg = "live1_213637_BF5J9CNb3T0RunrKgf4Zzmi7";
+    }
+    return $msg;
+    
 }
-function getClientSecret()
+function getClientSecret($hotel)
 {
-    return "wGuaXND4vpdTmVcIWbMOSR7YFxr08J9q";
+    if($hotel == "Jade")
+    {
+        $msg = "wGuaXND4vpdTmVcIWbMOSR7YFxr08J9q";
+    }else if($hotel == "Ophelia"){
+        $msg = "fDQ1ykgV7nlzvamA2MrpOZwIKqTRXchE";
+    }
+    return $msg;
 }
 
-function getReservations($checkinFrom, $checkinTo)
+function getReservations($checkinFrom, $checkinTo, $hotel)
 {
     $spreadsheet = new Spreadsheet();
 
     $checkIns = $spreadsheet->getActiveSheet();
 
-    $api_key = getApiToken();
+    $api_key = getApiToken($hotel);
     $head = array("Authorization" => 'Bearer ' . $api_key);
     $endpoint = getApiURL() . 'getReservations';
 
@@ -56,7 +75,7 @@ function getReservations($checkinFrom, $checkinTo)
 
 
     for ($page = 1; $page <= $paginationRound; $page++) {
-        $api_key = getApiToken();
+        $api_key = getApiToken($hotel);
         $head = array("Authorization" => 'Bearer ' . $api_key);
         $endpoint = getApiURL() . 'getReservations';
         $param = array('checkInFrom' => $checkinFrom, 'checkInTo' => $checkinTo, 'pageNumber' => $page);
@@ -79,7 +98,7 @@ function getReservations($checkinFrom, $checkinTo)
             $dbReservations[$key]['sourceName'] = $reservation->sourceName;
             /** iterar sobre los cuartos para revisar cada tarifa y el desglose con las fechas */
 
-            $reservationsRates = getReservationsWithRateDetails($reservation->reservationID);
+            $reservationsRates = getReservationsWithRateDetails($reservation->reservationID, $hotel);
 
             foreach ($reservationsRates as $datos) {
                 if (isset($datos->sourceReservationID)) {
@@ -99,7 +118,7 @@ function getReservations($checkinFrom, $checkinTo)
 
 
             /** (reservationPayments) Iterar sobre los pagos para generar un texto concentrando los datos del pago  de la reservación */
-            $reservationsInvoice = getReservationInvoiceInformation($reservation->reservationID);;
+            $reservationsInvoice = getReservationInvoiceInformation($reservation->reservationID, $hotel);;
             $payments = $reservationsInvoice->reservationPayments;
             $invoiceReservationRooms = $reservationsInvoice->reservationRooms;
             $invoiceBalanceDetailed = $reservationsInvoice->balanceDetailed;
@@ -127,7 +146,7 @@ function getReservations($checkinFrom, $checkinTo)
 
             /* Iterar sobre las notas para generar un texto concentrando las notas en el registro*/
 
-            $reservationsNotes = getNotes($reservation->reservationID);
+            $reservationsNotes = getNotes($reservation->reservationID, $hotel);
             foreach ($reservationsNotes as $reservationsNote) {
                 $userName = $reservationsNote->userName;
                 $dateCreated = $reservationsNote->dateCreated;
@@ -340,40 +359,40 @@ function sortbyheader($reservations)
     return $dbsortByHeader;
 }
 
-function getApiToken()
+function getApiToken($hotel)
 {
 
     $endpoint = getApiURL() . "access_token";
-    $data = array("client_id" => getClientId(), "client_secret" => getClientSecret(), "grant_type" => "refresh_token", "refresh_token" => getRefreshToken());
+    $data = array("client_id" => getClientId($hotel), "client_secret" => getClientSecret($hotel), "grant_type" => "refresh_token", "refresh_token" => getRefreshToken($hotel));
     $response = Http::acceptJson()->asForm()->post($endpoint, $data);
 
     return $response->json("access_token");
 }
 
-function getReservationsWithRateDetails($reservationID)
+function getReservationsWithRateDetails($reservationID, $hotel)
 {
     $endpoint = getApiURL() . "getReservationsWithRateDetails";
-    $head = array("Authorization" => 'Bearer ' . getApiToken());
+    $head = array("Authorization" => 'Bearer ' . getApiToken($hotel));
     $param = array("reservationID" => $reservationID);
     $response = Http::acceptJson()->withHeaders($head)->get($endpoint, $param);
     $response = json_decode($response);
     return $response->data;
 }
 
-function getReservationInvoiceInformation($reservationID)
+function getReservationInvoiceInformation($reservationID, $hotel)
 {
     $endpoint = getApiURL() . "getReservationInvoiceInformation";
-    $head = array("Authorization" => 'Bearer ' . getApiToken());
+    $head = array("Authorization" => 'Bearer ' . getApiToken($hotel));
     $param = array("reservationID" => $reservationID);
     $response = Http::acceptJson()->withHeaders($head)->get($endpoint, $param);
     $response = json_decode($response);
     return $response->data;
 }
 
-function getNotes($reservationID)
+function getNotes($reservationID, $hotel)
 {
     $endpoint = getApiURL() . "getReservationNotes";
-    $head = array("Authorization" => 'Bearer ' . getApiToken());
+    $head = array("Authorization" => 'Bearer ' . getApiToken($hotel));
     $param = array("reservationID" => $reservationID);
     $response = Http::acceptJson()->withHeaders($head)->get($endpoint, $param);
     $response = json_decode($response);

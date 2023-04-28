@@ -53,7 +53,8 @@ class HotelController extends Controller
 
     public function report(Request $request)
     {
-
+        
+        $hotel = $request -> input('hotel');
         $start_date = $request->input('checkIn');
         $end_date = $request->input('checkOut');
 
@@ -61,7 +62,7 @@ class HotelController extends Controller
         $this->authorize('manage-items', User::class);
         
         //$result = getApiToken();
-        $result = getReservations($start_date, $end_date);
+        $result = getReservations($start_date, $end_date, $hotel);
         //$result = getReservations('2023-03-28', '2023-03-29');
             /*
                 DB['reservatonssimple'] = array();
