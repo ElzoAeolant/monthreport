@@ -141,10 +141,11 @@ class HotelController extends Controller
 
         return redirect()->route('tag.index')->withStatus(__('Tag successfully deleted.'));
     }
-    public function export(Request $request) 
+    public function export() 
     {
-        $hotel = $request -> input('hotel');
-        return Excel::download(new ReservationExport(collect($this->dbReservation)), $hotel . '_reservation.xlsx');
+        
+        
+        return Excel::download(new ReservationExport(collect($this->dbReservation)),'reservation.xlsx');
     }
    
 }
