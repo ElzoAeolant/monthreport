@@ -22,6 +22,8 @@ function getRefreshToken($hotel)
         $msg = "LEDUzczTNnypxyPPkznxcTgwzSWZ1v7dM9uZ6nrTvD0";
     }else if($hotel == "Ophelia"){
         $msg = "an7p3tveHk039zUXEP0MT93Z8DRomAb2v4AWeoyVGJk";
+    }else if($hotel == "Atman"){
+        $msg = "2fC6HgnYPsIq2aE7y4I84AVu0C0vDX8yQS_VFtJbals";
     }
     return $msg;
 }
@@ -32,6 +34,8 @@ function getClientId($hotel)
         $msg = "live1_215504_UvykDRiC70YNOdoM5TsnAhzP";
     }else if($hotel == "Ophelia"){
         $msg = "live1_213637_BF5J9CNb3T0RunrKgf4Zzmi7";
+    }else if($hotel == "Atman"){
+        $msg = "live1_213640_wDjgICh9YSuykAE4vG7Jberm";
     }
     return $msg;
     
@@ -43,6 +47,8 @@ function getClientSecret($hotel)
         $msg = "wGuaXND4vpdTmVcIWbMOSR7YFxr08J9q";
     }else if($hotel == "Ophelia"){
         $msg = "fDQ1ykgV7nlzvamA2MrpOZwIKqTRXchE";
+    }else if($hotel == "Atman"){
+        $msg = "ou2TPIckDCVi45m3pUy7M8R6Wzsl9gEv";
     }
     return $msg;
 }

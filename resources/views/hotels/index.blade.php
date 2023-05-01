@@ -48,7 +48,7 @@
                                         <select name="hotel" id="hotel">
                                             <option value="Jade">Jade</option>
                                             <option value="Ophelia">Ophelia</option>
-                                            
+                                            <option value="Atman">Atman</option>
                                         </select>
                                     </div>
                                 </fieldset>

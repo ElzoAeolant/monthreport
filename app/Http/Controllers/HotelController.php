@@ -70,7 +70,7 @@ class HotelController extends Controller
              */
             //Excel::download(new LogsExport(DB), 'logs.xlsx');
         $this->dbReservation = $result;
-        return Excel::download(new ReservationExport(collect($this->dbReservation)), 'reservations.xlsx');
+        return Excel::download(new ReservationExport(collect($this->dbReservation)), $hotel . '_'. $start_date .'_' . $end_date . '_reservations.xlsx');
         $data = $result;
         return view('hotels.index',['data' => $data]);
         return view('monthly_report', ['report' => $data]);
@@ -141,11 +141,10 @@ class HotelController extends Controller
 
         return redirect()->route('tag.index')->withStatus(__('Tag successfully deleted.'));
     }
-    public function export() 
+    public function export($hotel) 
     {
         
-        
-        return Excel::download(new ReservationExport(collect($this->dbReservation)),'reservation.xlsx');
+        return Excel::download(new ReservationExport(collect($this->dbReservation)),$hotel . 'reservation.xlsx');
     }
    
 }
