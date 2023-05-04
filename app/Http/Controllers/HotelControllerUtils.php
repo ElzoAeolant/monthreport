@@ -181,9 +181,18 @@ function getReservations($checkinFrom, $checkinTo, $hotel)
             $tmpCheckOut = strtotime($dbReservations[$key]['endDate']);
             if (date("m", $tmpCheckIn) == date("m", $tmpCheckOut)) {
                 //Reservaciones simples: Mismo mes
-                foreach ($reservation["rooms"] as $room) {
+                foreach ($reservation["rooms"] as $i => $room) {
+
                     $hotelIndex = $hotelIndex + 1;
                     $dbReservations_simples[$hotelIndex] = $reservation;
+                    if($i > 0){
+                        $dbReservations_simples[$hotelIndex]['extras'] = "";
+                        $dbReservations_simples[$hotelIndex]['paid'] = "";
+                        $dbReservations_simples[$hotelIndex]['adjustments'] = "";
+                        $dbReservations_simples[$hotelIndex]['Notes'] = "";
+                        $dbReservations_simples[$hotelIndex]['difference'] = "";
+                    }
+                    
                     $initDate = $tmpCheckIn;
                     $endDate = $tmpCheckOut;
                     $sumRate = 0;
@@ -215,18 +224,21 @@ function getReservations($checkinFrom, $checkinTo, $hotel)
             } else {
                 //Reservaciones multiples meses.
                 $formatDate = "d-m-Y";
-                foreach ($reservation["rooms"] as $room) {
+                foreach ($reservation["rooms"] as $i => $room) {
                     $hotelIndex = $hotelIndex + 1;
                     $initDate = $tmpCheckIn;
                     $endDate = $tmpCheckOut;
                     $sumRate = 0;
+                    $flag = false;
                     foreach ($room["roomRates"] as $date => $rate) {
                         $dateTmp = strtotime($date);
                         if (date("m", $initDate) == date("m", $dateTmp)) {
                             $sumRate = $sumRate + $rate;
                         } else {
+                            $flag = true;
                             $endDate = $dateTmp;
                             $dbReservations_otherMonth[$hotelIndex] = $reservation;
+                            
                             $dbReservations_otherMonth[$hotelIndex]['startDate'] = str(date($formatDate, $initDate));
                             $dbReservations_otherMonth[$hotelIndex]['endDate'] = str(date($formatDate, $endDate));
                             $dbReservations_otherMonth[$hotelIndex]['room'] = $room["roomType"];
@@ -254,8 +266,17 @@ function getReservations($checkinFrom, $checkinTo, $hotel)
                         }
                     }
                     $hotelIndex = $hotelIndex + 1;
-                    $endDate = $tmpCheckOut
+                    $endDate = $tmpCheckOut;
                     $dbReservations_otherMonth[$hotelIndex] = $reservation;
+                    if($flag ){
+                        $dbReservations_otherMonth[$hotelIndex]['extras'] = "";
+                        $dbReservations_otherMonth[$hotelIndex]['paid'] = "";
+                        $dbReservations_otherMonth[$hotelIndex]['adjustments'] = "";
+                        $dbReservations_otherMonth[$hotelIndex]['Notes'] = "";
+                        $dbReservations_otherMonth[$hotelIndex]['difference'] = ""; 
+                    }
+                    
+                    
                     $dbReservations_otherMonth[$hotelIndex]['startDate'] = date($formatDate, $initDate);
                     $dbReservations_otherMonth[$hotelIndex]['endDate'] = date($formatDate, $endDate);
                     $dbReservations_otherMonth[$hotelIndex]['room'] = $room["roomType"];
