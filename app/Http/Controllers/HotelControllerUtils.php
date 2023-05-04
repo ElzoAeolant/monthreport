@@ -136,6 +136,7 @@ function getReservations($checkinFrom, $checkinTo, $hotel)
                 $paymentComments = "[" . $paymentType . "] " . $paymentDescription . ": " . $paymentDateTime . " - " . $paymentAmount . "\n";
             }
             $dbReservations[$hotelIndex]['PaymentComments'] = $paymentComments;
+            
             foreach ($invoiceReservationRooms as $reservationRooms) {
                 $dbReservations[$hotelIndex]["nights"] = $reservationRooms->nights;
                 $dbReservations[$hotelIndex]['subtotal'] = $reservationRooms->roomTotal;
@@ -167,7 +168,6 @@ function getReservations($checkinFrom, $checkinTo, $hotel)
     }
 
     foreach ($dbReservations as $key => $reservation) {
-        
         //Filtrar por status
         //Caso cancelados: Guardar solo en dbReservation_canceled          
         if ($reservation['status'] == "canceled" or $reservation['status'] == "no_show") {
@@ -177,13 +177,13 @@ function getReservations($checkinFrom, $checkinTo, $hotel)
             //TODO: Falta mandar a drive
         } else {
             // Caso no cancelado: 
-            $tmpCheckIn = strtotime($dbReservations[$hotelIndex]['startDate']);
-            $tmpCheckOut = strtotime($dbReservations[$hotelIndex]['endDate']);
+            $tmpCheckIn = strtotime($dbReservations[$key]['startDate']);
+            $tmpCheckOut = strtotime($dbReservations[$key]['endDate']);
             if (date("m", $tmpCheckIn) == date("m", $tmpCheckOut)) {
                 //Reservaciones simples: Mismo mes
-                $dbReservations_simples[$key] = $reservation;
-                foreach ($dbReservations_simples[$key]["rooms"] as $room) {
-                    continue;
+                foreach ($reservation["rooms"] as $room) {
+                    $hotelIndex = $hotelIndex + 1;
+                    $dbReservations_simples[$hotelIndex] = $reservation;
                     $initDate = $tmpCheckIn;
                     $endDate = $tmpCheckOut;
                     $sumRate = 0;
@@ -191,33 +191,32 @@ function getReservations($checkinFrom, $checkinTo, $hotel)
                         $dateTmp = strtotime($date);
                         if (date("m", $initDate) == date("m", $dateTmp)) {
                             $sumRate = $sumRate + $rate;
-                            $dbReservations_simples[$key]['subtotal'] = $sumRate;
-                            $dbReservations_simples[$key]['nights'] = ($endDate - $initDate) / (60 * 60 * 24);
-                            $dbReservations_simples[$key]['indexPriceNight'] = $sumRate / $dbReservations_simples[$key]['nights'];
-                            $dbReservations_simples[$key]['IVA'] = $sumRate * 0.16;
-                            $dbReservations_simples[$key]['ISH'] = $sumRate * 0.03;
-                            $dbReservations_simples[$key]['TotalTax'] = $sumRate * 0.19;
-                            $dbReservations_simples[$key]['Total'] = $sumRate + $dbReservations_simples[$key]['TotalTax'];
-                            $dbReservations_simples[$key]['room'] = $room["roomType"];
-                            $dbReservations_simples[$key]['flowCase'] = "1";
-                            $dbReservations_simples[$key]['MesAnterior'] = "NO";
-                            unset($dbReservations_simples[$key]['rooms']);
                         }
                     }
+                    $dbReservations_simples[$hotelIndex]['subtotal'] = $sumRate;
+                    $dbReservations_simples[$hotelIndex]['nights'] = ($endDate - $initDate) / (60 * 60 * 24);
+                    $dbReservations_simples[$hotelIndex]['indexPriceNight'] = $sumRate / $dbReservations_simples[$hotelIndex]['nights'];
+                    $dbReservations_simples[$hotelIndex]['IVA'] = $sumRate * 0.16;
+                    $dbReservations_simples[$hotelIndex]['ISH'] = $sumRate * 0.03;
+                    $dbReservations_simples[$hotelIndex]['TotalTax'] = $sumRate * 0.19;
+                    $dbReservations_simples[$hotelIndex]['Total'] = $sumRate + $dbReservations_simples[$hotelIndex]['TotalTax'];
+                    $dbReservations_simples[$hotelIndex]['room'] = $room["roomType"];
+                    $dbReservations_simples[$hotelIndex]['flowCase'] = "1";
+                    $dbReservations_simples[$hotelIndex]['MesAnterior'] = "NO";
+                    unset($dbReservations_simples[$hotelIndex]['rooms']);
                     //Out of pool
-                    if (strpos($dbReservations_simples[$key]['room'], "424789")) {
-                        $dbReservation_outPool[$key] = $dbReservations_simples[$key];
-                        $dbReservation_outPool[$key]['flowCase'] = "5";
-                        $dbReservation_outPool[$key]['MesAnterior'] = "NO";
-                        unset($dbReservations_simples[$key]);
+                    if (strpos($dbReservations_simples[$hotelIndex]['room'], "424789")) {
+                        $dbReservation_outPool[$hotelIndex] = $dbReservations_simples[$hotelIndex];
+                        $dbReservation_outPool[$hotelIndex]['flowCase'] = "5";
+                        $dbReservation_outPool[$hotelIndex]['MesAnterior'] = "NO";
+                        unset($dbReservations_simples[$hotelIndex]);
                     }
                 }
             } else {
                 //Reservaciones multiples meses.
-                $dbReservations_otherMonth[$key] = $reservation;
                 $formatDate = "d-m-Y";
-                foreach ($dbReservations_otherMonth[$key]["rooms"] as $room) {
-                    continue;
+                foreach ($reservation["rooms"] as $room) {
+                    $hotelIndex = $hotelIndex + 1;
                     $initDate = $tmpCheckIn;
                     $endDate = $tmpCheckOut;
                     $sumRate = 0;
@@ -227,55 +226,55 @@ function getReservations($checkinFrom, $checkinTo, $hotel)
                             $sumRate = $sumRate + $rate;
                         } else {
                             $endDate = $dateTmp;
-                            $dbReservations_otherMonth[$key] = $reservation;
-                            $dbReservations_otherMonth[$key]['startDate'] = str(date($formatDate, $initDate));
-                            $dbReservations_otherMonth[$key]['endDate'] = str(date($formatDate, $endDate));
-                            $dbReservations_otherMonth[$key]['room'] = $room["roomType"];
-                            $dbReservations_otherMonth[$key]['subtotal'] = $sumRate;
-                            $dbReservations_otherMonth[$key]['nights'] = ($endDate - $initDate) / (60 * 60 * 24);
-                            $dbReservations_otherMonth[$key]['indexPriceNight'] = $sumRate / $dbReservations_otherMonth[$key]['nights'];
-                            $dbReservations_otherMonth[$key]['IVA'] = $sumRate * 0.16;
-                            $dbReservations_otherMonth[$key]['ISH'] = $sumRate * 0.03;
-                            $dbReservations_otherMonth[$key]['TotalTax'] = $sumRate * 0.19;
-                            $dbReservations_otherMonth[$key]['Total'] = $sumRate + $dbReservations_otherMonth[$key]['TotalTax'];
-                            $dbReservations_otherMonth[$key]['flowCase'] = "2";
-                            $dbReservations_otherMonth[$key]['MesAnterior'] = "X";
+                            $dbReservations_otherMonth[$hotelIndex] = $reservation;
+                            $dbReservations_otherMonth[$hotelIndex]['startDate'] = str(date($formatDate, $initDate));
+                            $dbReservations_otherMonth[$hotelIndex]['endDate'] = str(date($formatDate, $endDate));
+                            $dbReservations_otherMonth[$hotelIndex]['room'] = $room["roomType"];
+                            $dbReservations_otherMonth[$hotelIndex]['subtotal'] = $sumRate;
+                            $dbReservations_otherMonth[$hotelIndex]['nights'] = ($endDate - $initDate) / (60 * 60 * 24);
+                            $dbReservations_otherMonth[$hotelIndex]['indexPriceNight'] = $sumRate / $dbReservations_otherMonth[$hotelIndex]['nights'];
+                            $dbReservations_otherMonth[$hotelIndex]['IVA'] = $sumRate * 0.16;
+                            $dbReservations_otherMonth[$hotelIndex]['ISH'] = $sumRate * 0.03;
+                            $dbReservations_otherMonth[$hotelIndex]['TotalTax'] = $sumRate * 0.19;
+                            $dbReservations_otherMonth[$hotelIndex]['Total'] = $sumRate + $dbReservations_otherMonth[$hotelIndex]['TotalTax'];
+                            $dbReservations_otherMonth[$hotelIndex]['flowCase'] = "2";
+                            $dbReservations_otherMonth[$hotelIndex]['MesAnterior'] = "X";
                             $initDate = $dateTmp;
                             $sumRate = 0;
                             $sumRate = $sumRate + $rate;
                         }
                     }
-                    if (isset($dbReservations_otherMonth[$key]['room'])) {
+                    if (isset($dbReservations_otherMonth[$hotelIndex]['room'])) {
                         //Out of pool
-                        if (strpos($dbReservations_otherMonth[$key]['room'], "424789")) {
-                            $dbReservation_outPool[$key] = $dbReservations_otherMonth[$key];
-                            $dbReservation_outPool[$key]['flowCase'] = "4";
-                            $dbReservation_outPool[$key]['MesAnterior'] = "SI";
-                            //unset($dbReservations_otherMonth[$key]);
+                        if (strpos($dbReservations_otherMonth[$hotelIndex]['room'], "424789")) {
+                            $dbReservation_outPool[$hotelIndex] = $dbReservations_otherMonth[$hotelIndex];
+                            $dbReservation_outPool[$hotelIndex]['flowCase'] = "4";
+                            $dbReservation_outPool[$hotelIndex]['MesAnterior'] = "SI";
+                            unset($dbReservations_otherMonth[$hotelIndex]);
                         }
                     }
-
-                    $endDate = $tmpCheckOut;
-                    $dbReservations_otherMonth[$key + $response->total] = $reservation;
-                    $dbReservations_otherMonth[$key + $response->total]['startDate'] = date($formatDate, $initDate);
-                    $dbReservations_otherMonth[$key + $response->total]['endDate'] = date($formatDate, $endDate);
-                    $dbReservations_otherMonth[$key + $response->total]['room'] = $room["roomType"];
-                    $dbReservations_otherMonth[$key + $response->total]['subtotal'] = $sumRate;
-                    $dbReservations_otherMonth[$key + $response->total]['nights'] = ($endDate - $initDate) / (60 * 60 * 24);
-                    $dbReservations_otherMonth[$key + $response->total]['indexPriceNight'] = $sumRate / $dbReservations_otherMonth[$key + $response->total]['nights'];
-                    $dbReservations_otherMonth[$key + $response->total]['IVA'] = $sumRate * 0.16;
-                    $dbReservations_otherMonth[$key + $response->total]['ISH'] = $sumRate * 0.03;
-                    $dbReservations_otherMonth[$key + $response->total]['TotalTax'] = $sumRate * 0.19;
-                    $dbReservations_otherMonth[$key + $response->total]['Total'] = $sumRate + $dbReservations_otherMonth[$key + $response->total]['TotalTax'];
-                    $dbReservations_otherMonth[$key + $response->total]['flowCase'] = "3";
-                    $dbReservations_otherMonth[$key + $response->total]['MesAnterior'] = "SI";
-                    if (isset($dbReservations_otherMonth[$key + $response->total]['room'])) {
+                    $hotelIndex = $hotelIndex + 1;
+                    $endDate = $tmpCheckOut
+                    $dbReservations_otherMonth[$hotelIndex] = $reservation;
+                    $dbReservations_otherMonth[$hotelIndex]['startDate'] = date($formatDate, $initDate);
+                    $dbReservations_otherMonth[$hotelIndex]['endDate'] = date($formatDate, $endDate);
+                    $dbReservations_otherMonth[$hotelIndex]['room'] = $room["roomType"];
+                    $dbReservations_otherMonth[$hotelIndex]['subtotal'] = $sumRate;
+                    $dbReservations_otherMonth[$hotelIndex]['nights'] = ($endDate - $initDate) / (60 * 60 * 24);
+                    $dbReservations_otherMonth[$hotelIndex]['indexPriceNight'] = $sumRate / $dbReservations_otherMonth[$hotelIndex]['nights'];
+                    $dbReservations_otherMonth[$hotelIndex]['IVA'] = $sumRate * 0.16;
+                    $dbReservations_otherMonth[$hotelIndex]['ISH'] = $sumRate * 0.03;
+                    $dbReservations_otherMonth[$hotelIndex]['TotalTax'] = $sumRate * 0.19;
+                    $dbReservations_otherMonth[$hotelIndex]['Total'] = $sumRate + $dbReservations_otherMonth[$hotelIndex]['TotalTax'];
+                    $dbReservations_otherMonth[$hotelIndex]['flowCase'] = "3";
+                    $dbReservations_otherMonth[$hotelIndex]['MesAnterior'] = "SI";
+                    if (isset($dbReservations_otherMonth[$hotelIndex]['room'])) {
                         //Out of pool
-                        if (strpos($dbReservations_otherMonth[$key + $response->total]['room'], "424789")) {
-                            $dbReservation_outPool[$key + $response->total] = $dbReservations_otherMonth[$key + $response->total];
-                            $dbReservation_outPool[$key + $response->total]['flowCase'] = "4";
-                            $dbReservation_outPool[$key + $response->total]['MesAnterior'] = "SI";
-                            unset($dbReservations_otherMonth[$key + $response->total]);
+                        if (strpos($dbReservations_otherMonth[$hotelIndex]['room'], "424789")) {
+                            $dbReservation_outPool[$hotelIndex] = $dbReservations_otherMonth[$hotelIndex];
+                            $dbReservation_outPool[$hotelIndex]['flowCase'] = "4";
+                            $dbReservation_outPool[$hotelIndex]['MesAnterior'] = "SI";
+                            unset($dbReservations_otherMonth[$hotelIndex]);
                         }
                     }
                 }
@@ -287,9 +286,8 @@ function getReservations($checkinFrom, $checkinTo, $hotel)
     $dbSortOtherMonth = sortbyheader($dbReservations_otherMonth);
     $dbSortOutOfPool = sortbyheader($dbReservation_outPool);
     $dbSortCanceled = sortbyheader($dbReservations_canceled);
-    $temp = array_merge($dbSortSimples, $dbSortOtherMonth, $dbSortOutOfPool, $dbSortCanceled);
-    dd($temp);
-    //return array_merge($dbSortSimples, $dbSortOtherMonth, $dbSortOutOfPool, $dbSortCanceled);
+    
+    return array_merge($dbSortSimples, $dbSortOtherMonth, $dbSortOutOfPool, $dbSortCanceled);
     
     
     //TODO: Agregar la sección de productos. 
